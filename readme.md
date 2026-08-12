@@ -1,4 +1,4 @@
-# Ravanix Lite 1.2.0 🎉
+# Ravanix Lite 1.0.7 🎉
 
 We are pleased to announce the **first official GitHub release of Ravanix Lite** — a free WordPress plugin for creating, managing, and administering psychological questionnaires and assessments.
 
@@ -36,11 +36,13 @@ Particular attention has been given to:
 * Consistent WordPress integration
 * Clear result presentation
 
-## 🔮 Ravanix Pro
+## 🔮 Ravanix Pro & Demo
 
 Ravanix Lite provides the core foundation of the Ravanix assessment platform.
 
 The **Ravanix Pro** edition is being developed for professionals and organizations requiring more advanced psychometric and reporting capabilities, including advanced norms, composite factors, professional reports, PDF generation, import/export capabilities, and additional assessment features.
+
+**https://psykey.ir/test/sample-mmpi-style-training-demo-en/**
 
 ## 🌐 Official Website
 
@@ -66,7 +68,7 @@ After installation, activate **Ravanix Lite** from the WordPress Plugins page.
 
 * **Platform:** WordPress
 * **Plugin:** Ravanix Lite
-* **Version:** 1.2.0
+* **Version:** 1.0.7
 * **License:** GPL-2.0-or-later
 
 ---
