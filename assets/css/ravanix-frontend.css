@@ -546,9 +546,18 @@
 .rs-my-results {
 	max-width: 900px;
 	margin: 0 auto;
+}
+
+.rs-my-results[dir="rtl"] {
 	direction: rtl;
 	text-align: right;
 	font-family: 'Vazirmatn', Tahoma, sans-serif;
+}
+
+.rs-my-results[dir="ltr"] {
+	direction: ltr;
+	text-align: left;
+	font-family: -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 .rs-table-scroll {
@@ -567,7 +576,7 @@
 .rs-my-results-table td {
 	border: 1px solid #e6e6e6;
 	padding: 10px 12px;
-	text-align: right;
+	text-align: start; /* follows the ancestor's direction, instead of always-right */
 	vertical-align: middle;
 	white-space: nowrap;
 }
