@@ -15,8 +15,8 @@
 	var tests = ( window.RavanixBlockData && window.RavanixBlockData.tests ) || [];
 
 	blocks.registerBlockType( 'ravanix/questionnaire', {
-		title: __( 'Ravanix – Questionnaire', 'ravanix-lite' ),
-		description: __( 'Display a specific questionnaire, or a list of all published questionnaires as a list or a grid.', 'ravanix-lite' ),
+		title: __( 'Ravanix – Questionnaire', 'ravanix' ),
+		description: __( 'Display a specific questionnaire, or a list of all published questionnaires as a list or a grid.', 'ravanix' ),
 		icon: 'forms',
 		category: 'widgets',
 		attributes: {
@@ -34,7 +34,7 @@
 			var setAttributes = props.setAttributes;
 			var blockProps = useBlockProps ? useBlockProps() : {};
 
-			var testOptions = [ { label: __( '— Select a questionnaire —', 'ravanix-lite' ), value: 0 } ].concat(
+			var testOptions = [ { label: __( '— Select a questionnaire —', 'ravanix' ), value: 0 } ].concat(
 				tests.map( function ( t ) {
 					return { label: t.title, value: t.id };
 				} )
@@ -45,13 +45,13 @@
 				{},
 				el(
 					PanelBody,
-					{ title: __( 'Display settings', 'ravanix-lite' ), initialOpen: true },
+					{ title: __( 'Display settings', 'ravanix' ), initialOpen: true },
 					el( SelectControl, {
-						label: __( 'Display mode', 'ravanix-lite' ),
+						label: __( 'Display mode', 'ravanix' ),
 						value: attributes.mode,
 						options: [
-							{ label: __( 'List of all questionnaires', 'ravanix-lite' ), value: 'list' },
-							{ label: __( 'A specific questionnaire', 'ravanix-lite' ), value: 'single' }
+							{ label: __( 'List of all questionnaires', 'ravanix' ), value: 'list' },
+							{ label: __( 'A specific questionnaire', 'ravanix' ), value: 'single' }
 						],
 						onChange: function ( value ) {
 							setAttributes( { mode: value } );
@@ -60,7 +60,7 @@
 
 					attributes.mode === 'single' &&
 						el( SelectControl, {
-							label: __( 'Questionnaire', 'ravanix-lite' ),
+							label: __( 'Questionnaire', 'ravanix' ),
 							value: attributes.testId,
 							options: testOptions,
 							onChange: function ( value ) {
@@ -70,7 +70,7 @@
 
 					attributes.mode === 'single' &&
 						el( ToggleControl, {
-							label: __( 'Hide the title and description above the form', 'ravanix-lite' ),
+							label: __( 'Hide the title and description above the form', 'ravanix' ),
 							checked: attributes.hideHeader,
 							onChange: function ( value ) {
 								setAttributes( { hideHeader: value } );
@@ -79,11 +79,11 @@
 
 					attributes.mode === 'list' &&
 						el( SelectControl, {
-							label: __( 'Layout', 'ravanix-lite' ),
+							label: __( 'Layout', 'ravanix' ),
 							value: attributes.layout,
 							options: [
-								{ label: __( 'Grid', 'ravanix-lite' ), value: 'grid' },
-								{ label: __( 'List', 'ravanix-lite' ), value: 'list' }
+								{ label: __( 'Grid', 'ravanix' ), value: 'grid' },
+								{ label: __( 'List', 'ravanix' ), value: 'list' }
 							],
 							onChange: function ( value ) {
 								setAttributes( { layout: value } );
@@ -93,7 +93,7 @@
 					attributes.mode === 'list' &&
 						attributes.layout === 'grid' &&
 						el( RangeControl, {
-							label: __( 'Number of columns', 'ravanix-lite' ),
+							label: __( 'Number of columns', 'ravanix' ),
 							value: attributes.columns,
 							min: 2,
 							max: 4,
@@ -104,7 +104,7 @@
 
 					attributes.mode === 'list' &&
 						el( ToggleControl, {
-							label: __( 'Show featured image', 'ravanix-lite' ),
+							label: __( 'Show featured image', 'ravanix' ),
 							checked: attributes.showImage,
 							onChange: function ( value ) {
 								setAttributes( { showImage: value } );
@@ -113,7 +113,7 @@
 
 					attributes.mode === 'list' &&
 						el( ToggleControl, {
-							label: __( 'Show description excerpt', 'ravanix-lite' ),
+							label: __( 'Show description excerpt', 'ravanix' ),
 							checked: attributes.showExcerpt,
 							onChange: function ( value ) {
 								setAttributes( { showExcerpt: value } );
@@ -126,13 +126,13 @@
 			if ( attributes.mode === 'single' && ! attributes.testId ) {
 				preview = el( Placeholder, {
 					icon: 'forms',
-					label: __( 'Ravanix – Questionnaire', 'ravanix-lite' )
-				}, __( 'Select a questionnaire from the settings panel (on the right).', 'ravanix-lite' ) );
+					label: __( 'Ravanix – Questionnaire', 'ravanix' )
+				}, __( 'Select a questionnaire from the settings panel (on the right).', 'ravanix' ) );
 			} else if ( tests.length === 0 && attributes.mode === 'list' ) {
 				preview = el( Placeholder, {
 					icon: 'forms',
-					label: __( 'Ravanix – Questionnaire', 'ravanix-lite' )
-				}, __( 'No questionnaire has been published yet.', 'ravanix-lite' ) );
+					label: __( 'Ravanix – Questionnaire', 'ravanix' )
+				}, __( 'No questionnaire has been published yet.', 'ravanix' ) );
 			} else {
 				preview = el( ServerSideRender, {
 					block: 'ravanix/questionnaire',
