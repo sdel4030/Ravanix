@@ -27,7 +27,7 @@ if ( $edit_id ) {
 ?>
 <div class="rs-columns">
 	<div class="rs-col-form">
-		<h2><?php echo $editing ? esc_html__( 'Edit Dimension', 'ravanix-lite' ) : esc_html__( 'Add New Dimension', 'ravanix-lite' ); ?></h2>
+		<h2><?php echo $editing ? esc_html__( 'Edit Dimension', 'ravanix' ) : esc_html__( 'Add New Dimension', 'ravanix' ); ?></h2>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'ravanix_save_dimension' ); ?>
 			<input type="hidden" name="action" value="ravanix_save_dimension">
@@ -35,17 +35,17 @@ if ( $edit_id ) {
 			<input type="hidden" name="dimension_id" value="<?php echo $editing ? intval( $editing->id ) : 0; ?>">
 
 			<p>
-				<label><?php esc_html_e( 'Dimension name', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Dimension name', 'ravanix' ); ?></label><br>
 				<input type="text" name="name" class="regular-text" required dir="<?php echo esc_attr( is_rtl() ? 'rtl' : 'ltr' ); ?>"
-					value="<?php echo $editing ? esc_attr( $editing->name ) : ''; ?>" placeholder="<?php esc_attr_e( 'e.g. Extraversion', 'ravanix-lite' ); ?>">
+					value="<?php echo $editing ? esc_attr( $editing->name ) : ''; ?>" placeholder="<?php esc_attr_e( 'e.g. Extraversion', 'ravanix' ); ?>">
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Unique code (English, no spaces)', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Unique code (English, no spaces)', 'ravanix' ); ?></label><br>
 				<input type="text" name="code" class="regular-text"
-					value="<?php echo $editing ? esc_attr( $editing->code ) : ''; ?>" placeholder="<?php esc_attr_e( 'e.g. extraversion', 'ravanix-lite' ); ?>">
+					value="<?php echo $editing ? esc_attr( $editing->code ) : ''; ?>" placeholder="<?php esc_attr_e( 'e.g. extraversion', 'ravanix' ); ?>">
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Description', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Description', 'ravanix' ); ?></label><br>
 				<?php
 				wp_editor(
 					$editing ? $editing->description : '',
@@ -61,45 +61,45 @@ if ( $edit_id ) {
 				?>
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Display order', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Display order', 'ravanix' ); ?></label><br>
 				<input type="number" name="sort_order" value="<?php echo $editing ? intval( $editing->sort_order ) : 0; ?>">
 			</p>
 			<?php if ( class_exists( 'Ravanix_Pro_Scoring' ) ) : ?>
 			<p>
-				<label><?php esc_html_e( 'Interpretation basis', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Interpretation basis', 'ravanix' ); ?></label><br>
 				<select name="interpretation_basis">
-					<option value="raw" <?php selected( $editing ? $editing->interpretation_basis : 'raw', 'raw' ); ?>><?php esc_html_e( 'Raw score', 'ravanix-lite' ); ?></option>
-					<option value="t_score" <?php selected( $editing ? $editing->interpretation_basis : '', 't_score' ); ?>><?php esc_html_e( 'T-score (requires a norm table)', 'ravanix-lite' ); ?></option>
+					<option value="raw" <?php selected( $editing ? $editing->interpretation_basis : 'raw', 'raw' ); ?>><?php esc_html_e( 'Raw score', 'ravanix' ); ?></option>
+					<option value="t_score" <?php selected( $editing ? $editing->interpretation_basis : '', 't_score' ); ?>><?php esc_html_e( 'T-score (requires a norm table)', 'ravanix' ); ?></option>
 				</select>
-				<p class="description"><?php esc_html_e( 'If you choose "T-score", this dimension\'s interpretation ranges must be written based on the T-score, not the raw score. For this mode, define at least one norm table for this dimension in the "Norms" tab.', 'ravanix-lite' ); ?></p>
+				<p class="description"><?php esc_html_e( 'If you choose "T-score", this dimension\'s interpretation ranges must be written based on the T-score, not the raw score. For this mode, define at least one norm table for this dimension in the "Norms" tab.', 'ravanix' ); ?></p>
 			</p>
 			<p>
 				<label>
 					<input type="checkbox" name="is_validity_scale" id="rs-is-validity-scale" value="1" <?php checked( $editing ? $editing->is_validity_scale : 0, 1 ); ?>>
-					<?php esc_html_e( 'This dimension is a validity scale (like L/F/K in the MMPI)', 'ravanix-lite' ); ?>
+					<?php esc_html_e( 'This dimension is a validity scale (like L/F/K in the MMPI)', 'ravanix' ); ?>
 				</label>
 			</p>
 			<p id="rs-validity-threshold-wrap" style="<?php echo ( $editing && $editing->is_validity_scale ) ? '' : 'display:none;'; ?>">
-				<label><?php esc_html_e( 'Warning threshold (score at or above which the result is flagged as questionable)', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Warning threshold (score at or above which the result is flagged as questionable)', 'ravanix' ); ?></label><br>
 				<input type="number" step="any" name="validity_threshold" value="<?php echo ( $editing && null !== $editing->validity_threshold ) ? esc_attr( $editing->validity_threshold ) : ''; ?>">
 			</p>
 			<?php else : ?>
 			<input type="hidden" name="interpretation_basis" value="raw">
 			<?php endif; ?>
-			<?php submit_button( $editing ? __( 'Save Changes', 'ravanix-lite' ) : __( 'Add Dimension', 'ravanix-lite' ) ); ?>
+			<?php submit_button( $editing ? __( 'Save Changes', 'ravanix' ) : __( 'Add Dimension', 'ravanix' ) ); ?>
 			<?php if ( $editing ) : ?>
-				<a href="<?php echo esc_url( $base_url . '&tab=dimensions' ); ?>"><?php esc_html_e( 'Cancel', 'ravanix-lite' ); ?></a>
+				<a href="<?php echo esc_url( $base_url . '&tab=dimensions' ); ?>"><?php esc_html_e( 'Cancel', 'ravanix' ); ?></a>
 			<?php endif; ?>
 		</form>
 	</div>
 
 	<div class="rs-col-list">
-		<h2><?php esc_html_e( 'Dimensions of this test', 'ravanix-lite' ); ?></h2>
+		<h2><?php esc_html_e( 'Dimensions of this test', 'ravanix' ); ?></h2>
 		<?php if ( ! empty( $test->dimensions ) && ! empty( $test->questions ) ) : ?>
-			<p class="description"><?php esc_html_e( 'To quickly assign questions to a dimension, separate the question numbers (the same numbers you see in the "Questions" tab) with commas and enter them in the box next to that dimension; example: 5, 6, 7, 15', 'ravanix-lite' ); ?></p>
+			<p class="description"><?php esc_html_e( 'To quickly assign questions to a dimension, separate the question numbers (the same numbers you see in the "Questions" tab) with commas and enter them in the box next to that dimension; example: 5, 6, 7, 15', 'ravanix' ); ?></p>
 		<?php endif; ?>
 		<?php if ( empty( $test->dimensions ) ) : ?>
-			<p><?php esc_html_e( 'No dimension has been defined yet. If your test is single-dimensional (like a simple screening test), still create one dimension with the test\'s general name so scoring and interpretation can be performed.', 'ravanix-lite' ); ?></p>
+			<p><?php esc_html_e( 'No dimension has been defined yet. If your test is single-dimensional (like a simple screening test), still create one dimension with the test\'s general name so scoring and interpretation can be performed.', 'ravanix' ); ?></p>
 		<?php else : ?>
 			<?php
 			// Maps question ID to its sequential position (the same number shown in the "Questions" tab)
@@ -110,11 +110,11 @@ if ( $edit_id ) {
 			?>
 			<table class="wp-list-table widefat striped">
 				<thead><tr>
-					<th><?php esc_html_e( 'Name', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Code', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Number of questions', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Quick-assign questions (by number)', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'ravanix-lite' ); ?></th>
+					<th><?php esc_html_e( 'Name', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Code', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Number of questions', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Quick-assign questions (by number)', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'ravanix' ); ?></th>
 				</tr></thead>
 				<tbody>
 				<?php foreach ( $test->dimensions as $d ) : ?>
@@ -139,15 +139,15 @@ if ( $edit_id ) {
 								<input type="hidden" name="dimension_id" value="<?php echo intval( $d->id ); ?>">
 								<input type="text" name="question_numbers" class="regular-text" dir="ltr"
 									value="<?php echo esc_attr( implode( ', ', $positions ) ); ?>"
-									placeholder="<?php esc_attr_e( '5, 6, 7, 15', 'ravanix-lite' ); ?>">
-								<button type="submit" class="button button-small"><?php esc_html_e( 'Update', 'ravanix-lite' ); ?></button>
+									placeholder="<?php esc_attr_e( '5, 6, 7, 15', 'ravanix' ); ?>">
+								<button type="submit" class="button button-small"><?php esc_html_e( 'Update', 'ravanix' ); ?></button>
 							</form>
 						</td>
 						<td>
-							<a href="<?php echo esc_url( $base_url . '&tab=dimensions&edit_dimension=' . $d->id ); ?>"><?php esc_html_e( 'Edit', 'ravanix-lite' ); ?></a>
+							<a href="<?php echo esc_url( $base_url . '&tab=dimensions&edit_dimension=' . $d->id ); ?>"><?php esc_html_e( 'Edit', 'ravanix' ); ?></a>
 							|
 							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ravanix_delete_dimension&dimension_id=' . $d->id . '&test_id=' . $test_id ), 'ravanix_delete_dimension' ) ); ?>"
-								onclick="return confirm('<?php echo esc_js( __( 'Delete this dimension? Related questions will not be deleted, but will be unassigned from it.', 'ravanix-lite' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix-lite' ); ?></a>
+								onclick="return confirm('<?php echo esc_js( __( 'Delete this dimension? Related questions will not be deleted, but will be unassigned from it.', 'ravanix' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix' ); ?></a>
 						</td>
 					</tr>
 				<?php endforeach; ?>

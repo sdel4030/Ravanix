@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 if ( empty( $test->dimensions ) ) :
 	?>
-	<p><?php esc_html_e( 'You must first define at least one dimension in the "Dimensions / Subscales" tab so you can add an interpretation range for it.', 'ravanix-lite' ); ?></p>
+	<p><?php esc_html_e( 'You must first define at least one dimension in the "Dimensions / Subscales" tab so you can add an interpretation range for it.', 'ravanix' ); ?></p>
 	<?php
 	return;
 endif;
@@ -37,7 +37,7 @@ foreach ( $test->dimensions as $d ) {
 ?>
 <div class="rs-columns">
 	<div class="rs-col-form">
-		<h2><?php echo $editing ? esc_html__( 'Edit Interpretation Range', 'ravanix-lite' ) : esc_html__( 'Add Interpretation Range', 'ravanix-lite' ); ?></h2>
+		<h2><?php echo $editing ? esc_html__( 'Edit Interpretation Range', 'ravanix' ) : esc_html__( 'Add Interpretation Range', 'ravanix' ); ?></h2>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'ravanix_save_interpretation' ); ?>
 			<input type="hidden" name="action" value="ravanix_save_interpretation">
@@ -45,7 +45,7 @@ foreach ( $test->dimensions as $d ) {
 			<input type="hidden" name="interpretation_id" value="<?php echo $editing ? intval( $editing->id ) : 0; ?>">
 
 			<p>
-				<label><?php esc_html_e( 'Related dimension', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Related dimension', 'ravanix' ); ?></label><br>
 				<select name="dimension_id" id="rs-interp-dimension">
 					<?php foreach ( $test->dimensions as $d ) : ?>
 						<option value="<?php echo intval( $d->id ); ?>" data-basis="<?php echo esc_attr( $d->interpretation_basis ); ?>" <?php selected( $editing_dim_id, $d->id ); ?>><?php echo esc_html( $d->name ); ?></option>
@@ -54,23 +54,23 @@ foreach ( $test->dimensions as $d ) {
 				<p class="description" id="rs-interp-basis-hint"></p>
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Minimum score of this range', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Minimum score of this range', 'ravanix' ); ?></label><br>
 				<input type="number" step="any" name="range_min" required value="<?php echo $editing ? esc_attr( $editing->range_min ) : ''; ?>">
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Maximum score of this range', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Maximum score of this range', 'ravanix' ); ?></label><br>
 				<input type="number" step="any" name="range_max" required value="<?php echo $editing ? esc_attr( $editing->range_max ) : ''; ?>">
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Level label (e.g.: Low / Moderate / High)', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Level label (e.g.: Low / Moderate / High)', 'ravanix' ); ?></label><br>
 				<input type="text" name="level_label" class="regular-text" required value="<?php echo $editing ? esc_attr( $editing->level_label ) : ''; ?>">
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Chart display color', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Chart display color', 'ravanix' ); ?></label><br>
 				<input type="text" name="level_color" value="<?php echo $editing ? esc_attr( $editing->level_color ) : '#4a90d9'; ?>" class="rs-color-field">
 			</p>
 			<p>
-				<label><?php esc_html_e( 'Interpretive description (shown to the user)', 'ravanix-lite' ); ?></label><br>
+				<label><?php esc_html_e( 'Interpretive description (shown to the user)', 'ravanix' ); ?></label><br>
 				<?php
 				wp_editor(
 					$editing ? $editing->description : '',
@@ -86,9 +86,9 @@ foreach ( $test->dimensions as $d ) {
 				?>
 			</p>
 
-			<?php submit_button( $editing ? __( 'Save Changes', 'ravanix-lite' ) : __( 'Add Range', 'ravanix-lite' ) ); ?>
+			<?php submit_button( $editing ? __( 'Save Changes', 'ravanix' ) : __( 'Add Range', 'ravanix' ) ); ?>
 			<?php if ( $editing ) : ?>
-				<a href="<?php echo esc_url( $base_url . '&tab=interpretations' ); ?>"><?php esc_html_e( 'Cancel', 'ravanix-lite' ); ?></a>
+				<a href="<?php echo esc_url( $base_url . '&tab=interpretations' ); ?>"><?php esc_html_e( 'Cancel', 'ravanix' ); ?></a>
 			<?php endif; ?>
 		</form>
 	</div>
@@ -97,21 +97,21 @@ foreach ( $test->dimensions as $d ) {
 		<?php foreach ( $test->dimensions as $d ) : ?>
 			<h3><?php echo esc_html( $d->name ); ?></h3>
 			<?php if ( empty( $d->interpretations ) ) : ?>
-				<p class="description"><?php esc_html_e( 'No interpretation range has been defined for this dimension.', 'ravanix-lite' ); ?></p>
+				<p class="description"><?php esc_html_e( 'No interpretation range has been defined for this dimension.', 'ravanix' ); ?></p>
 			<?php else : ?>
 				<table class="wp-list-table widefat striped" style="margin-bottom:20px;">
-					<thead><tr><th><?php esc_html_e( 'Range', 'ravanix-lite' ); ?></th><th><?php esc_html_e( 'Label', 'ravanix-lite' ); ?></th><th><?php esc_html_e( 'Color', 'ravanix-lite' ); ?></th><th><?php esc_html_e( 'Actions', 'ravanix-lite' ); ?></th></tr></thead>
+					<thead><tr><th><?php esc_html_e( 'Range', 'ravanix' ); ?></th><th><?php esc_html_e( 'Label', 'ravanix' ); ?></th><th><?php esc_html_e( 'Color', 'ravanix' ); ?></th><th><?php esc_html_e( 'Actions', 'ravanix' ); ?></th></tr></thead>
 					<tbody>
 					<?php foreach ( $d->interpretations as $int ) : ?>
 						<tr>
-							<td><?php echo esc_html( $int->range_min . ' ' . __( 'to', 'ravanix-lite' ) . ' ' . $int->range_max ); ?></td>
+							<td><?php echo esc_html( $int->range_min . ' ' . __( 'to', 'ravanix' ) . ' ' . $int->range_max ); ?></td>
 							<td><?php echo esc_html( $int->level_label ); ?></td>
 							<td><span class="rs-color-dot" style="background:<?php echo esc_attr( $int->level_color ); ?>"></span></td>
 							<td>
-								<a href="<?php echo esc_url( $base_url . '&tab=interpretations&edit_interpretation=' . $int->id . '&dimension_id=' . $d->id ); ?>"><?php esc_html_e( 'Edit', 'ravanix-lite' ); ?></a>
+								<a href="<?php echo esc_url( $base_url . '&tab=interpretations&edit_interpretation=' . $int->id . '&dimension_id=' . $d->id ); ?>"><?php esc_html_e( 'Edit', 'ravanix' ); ?></a>
 								|
 								<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ravanix_delete_interpretation&interpretation_id=' . $int->id . '&test_id=' . $test_id ), 'ravanix_delete_interpretation' ) ); ?>"
-									onclick="return confirm('<?php echo esc_js( __( 'Delete this range?', 'ravanix-lite' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix-lite' ); ?></a>
+									onclick="return confirm('<?php echo esc_js( __( 'Delete this range?', 'ravanix' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix' ); ?></a>
 							</td>
 						</tr>
 					<?php endforeach; ?>

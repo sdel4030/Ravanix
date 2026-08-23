@@ -63,20 +63,20 @@ $results = $wpdb->get_results(
 );
 ?>
 <div class="wrap rs-wrap" dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>">
-	<h1><?php esc_html_e( 'Participant Results', 'ravanix-lite' ); ?></h1>
+	<h1><?php esc_html_e( 'Participant Results', 'ravanix' ); ?></h1>
 
 	<?php if ( isset( $_GET['deleted'] ) ) : ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'The result was deleted.', 'ravanix-lite' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'The result was deleted.', 'ravanix' ); ?></p></div>
 	<?php endif; ?>
 	<?php if ( isset( $_GET['bulk_done'] ) ) : ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Bulk action completed successfully.', 'ravanix-lite' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Bulk action completed successfully.', 'ravanix' ); ?></p></div>
 	<?php endif; ?>
 
 	<form method="get" style="margin:15px 0;">
 		<input type="hidden" name="page" value="ravanix-results">
-		<label><?php esc_html_e( 'Filter by test:', 'ravanix-lite' ); ?></label>
+		<label><?php esc_html_e( 'Filter by test:', 'ravanix' ); ?></label>
 		<select name="test_id" onchange="this.form.submit()">
-			<option value="0"><?php esc_html_e( 'All Tests', 'ravanix-lite' ); ?></option>
+			<option value="0"><?php esc_html_e( 'All Tests', 'ravanix' ); ?></option>
 			<?php foreach ( $tests_for_filter as $t ) : ?>
 				<option value="<?php echo intval( $t->id ); ?>" <?php selected( $filter_test_id, $t->id ); ?>><?php echo esc_html( $t->title ); ?></option>
 			<?php endforeach; ?>
@@ -99,12 +99,12 @@ $results = $wpdb->get_results(
 		<div class="tablenav top">
 			<div class="alignleft actions">
 				<select name="bulk_action">
-					<option value=""><?php esc_html_e( 'Bulk actions', 'ravanix-lite' ); ?></option>
-					<option value="delete"><?php esc_html_e( 'Delete', 'ravanix-lite' ); ?></option>
+					<option value=""><?php esc_html_e( 'Bulk actions', 'ravanix' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'ravanix' ); ?></option>
 				</select>
 				<button type="submit" class="button"
-					onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete the selected items?', 'ravanix-lite' ) ); ?>');">
-					<?php esc_html_e( 'Apply', 'ravanix-lite' ); ?>
+					onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete the selected items?', 'ravanix' ) ); ?>');">
+					<?php esc_html_e( 'Apply', 'ravanix' ); ?>
 				</button>
 			</div>
 		</div>
@@ -113,16 +113,16 @@ $results = $wpdb->get_results(
 			<thead>
 				<tr>
 					<td class="manage-column column-cb check-column"><input type="checkbox" id="rs-results-select-all"></td>
-					<th><?php esc_html_e( 'Date', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Test', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Participant', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Validity', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'ravanix-lite' ); ?></th>
+					<th><?php esc_html_e( 'Date', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Test', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Participant', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Validity', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'ravanix' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php if ( empty( $results ) ) : ?>
-					<tr><td colspan="6"><?php esc_html_e( 'No results have been recorded yet.', 'ravanix-lite' ); ?></td></tr>
+					<tr><td colspan="6"><?php esc_html_e( 'No results have been recorded yet.', 'ravanix' ); ?></td></tr>
 				<?php endif; ?>
 				<?php foreach ( $results as $r ) : ?>
 					<?php
@@ -142,22 +142,22 @@ $results = $wpdb->get_results(
 						<td><?php echo esc_html( $r->test_title ); ?></td>
 						<td>
 							<?php if ( $display_label && ! $r->user_id ) : ?>
-								<?php echo esc_html( $display_label ); ?> <span class="description">(<?php esc_html_e( 'Guest', 'ravanix-lite' ); ?>)</span>
+								<?php echo esc_html( $display_label ); ?> <span class="description">(<?php esc_html_e( 'Guest', 'ravanix' ); ?>)</span>
 							<?php elseif ( $display_label ) : ?>
 								<?php echo esc_html( $display_label ); ?>
 							<?php else : ?>
-								<span class="description"><?php esc_html_e( 'Guest', 'ravanix-lite' ); ?></span>
+								<span class="description"><?php esc_html_e( 'Guest', 'ravanix' ); ?></span>
 							<?php endif; ?>
 						</td>
 						<td>
 							<?php if ( ! empty( $r->is_validity_flagged ) ) : ?>
-								<span class="rs-badge" style="background:#fff3cd;color:#7a5b00;">⚠ <?php esc_html_e( 'Questionable', 'ravanix-lite' ); ?></span>
+								<span class="rs-badge" style="background:#fff3cd;color:#7a5b00;">⚠ <?php esc_html_e( 'Questionable', 'ravanix' ); ?></span>
 							<?php else : ?>
 								<span class="description">—</span>
 							<?php endif; ?>
 						</td>
 						<td>
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=ravanix-results&result_id=' . $r->id ) ); ?>"><?php esc_html_e( 'View profile', 'ravanix-lite' ); ?></a>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=ravanix-results&result_id=' . $r->id ) ); ?>"><?php esc_html_e( 'View profile', 'ravanix' ); ?></a>
 							<?php
 							/**
 							 * Adds extra links for each result row (like the PDF download link in Ravanix Pro).
@@ -168,7 +168,7 @@ $results = $wpdb->get_results(
 							?>
 							|
 							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ravanix_delete_result&result_id=' . $r->id ), 'ravanix_delete_result' ) ); ?>"
-								onclick="return confirm('<?php echo esc_js( __( 'Delete this result?', 'ravanix-lite' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix-lite' ); ?></a>
+								onclick="return confirm('<?php echo esc_js( __( 'Delete this result?', 'ravanix' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix' ); ?></a>
 						</td>
 					</tr>
 				<?php endforeach; ?>

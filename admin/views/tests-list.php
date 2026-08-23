@@ -73,21 +73,21 @@ $ravanix_status_link = function ( $status, $label, $count ) use ( $status_filter
 };
 ?>
 <div class="wrap rs-wrap" dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>">
-	<h1 class="wp-heading-inline"><?php esc_html_e( 'Psychological Tests', 'ravanix-lite' ); ?></h1>
-	<a href="<?php echo esc_url( admin_url( 'admin.php?page=ravanix-edit-test' ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New Test', 'ravanix-lite' ); ?></a>
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'Psychological Tests', 'ravanix' ); ?></h1>
+	<a href="<?php echo esc_url( admin_url( 'admin.php?page=ravanix-edit-test' ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New Test', 'ravanix' ); ?></a>
 	<hr class="wp-header-end">
 
 	<?php if ( isset( $_GET['deleted'] ) ) : ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'The item was deleted.', 'ravanix-lite' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'The item was deleted.', 'ravanix' ); ?></p></div>
 	<?php endif; ?>
 	<?php if ( isset( $_GET['bulk_done'] ) ) : ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Bulk action completed successfully.', 'ravanix-lite' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Bulk action completed successfully.', 'ravanix' ); ?></p></div>
 	<?php endif; ?>
 
 	<ul class="subsubsub">
-		<li class="all"><?php echo wp_kses_post( $ravanix_status_link( '', __( 'All', 'ravanix-lite' ), $counts['all'] ) ); ?> |</li>
-		<li class="publish"><?php echo wp_kses_post( $ravanix_status_link( 'published', __( 'Published', 'ravanix-lite' ), $counts['published'] ) ); ?> |</li>
-		<li class="draft"><?php echo wp_kses_post( $ravanix_status_link( 'draft', __( 'Draft', 'ravanix-lite' ), $counts['draft'] ) ); ?></li>
+		<li class="all"><?php echo wp_kses_post( $ravanix_status_link( '', __( 'All', 'ravanix' ), $counts['all'] ) ); ?> |</li>
+		<li class="publish"><?php echo wp_kses_post( $ravanix_status_link( 'published', __( 'Published', 'ravanix' ), $counts['published'] ) ); ?> |</li>
+		<li class="draft"><?php echo wp_kses_post( $ravanix_status_link( 'draft', __( 'Draft', 'ravanix' ), $counts['draft'] ) ); ?></li>
 	</ul>
 
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="rs-tests-bulk-form">
@@ -97,14 +97,14 @@ $ravanix_status_link = function ( $status, $label, $count ) use ( $status_filter
 		<div class="tablenav top">
 			<div class="alignleft actions">
 				<select name="bulk_action">
-					<option value=""><?php esc_html_e( 'Bulk actions', 'ravanix-lite' ); ?></option>
-					<option value="publish"><?php esc_html_e( 'Publish', 'ravanix-lite' ); ?></option>
-					<option value="draft"><?php esc_html_e( 'Move to draft', 'ravanix-lite' ); ?></option>
-					<option value="delete"><?php esc_html_e( 'Delete', 'ravanix-lite' ); ?></option>
+					<option value=""><?php esc_html_e( 'Bulk actions', 'ravanix' ); ?></option>
+					<option value="publish"><?php esc_html_e( 'Publish', 'ravanix' ); ?></option>
+					<option value="draft"><?php esc_html_e( 'Move to draft', 'ravanix' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'ravanix' ); ?></option>
 				</select>
 				<button type="submit" class="button" id="rs-tests-bulk-apply"
-					onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to perform this action on the selected items?', 'ravanix-lite' ) ); ?>');">
-					<?php esc_html_e( 'Apply', 'ravanix-lite' ); ?>
+					onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to perform this action on the selected items?', 'ravanix' ) ); ?>');">
+					<?php esc_html_e( 'Apply', 'ravanix' ); ?>
 				</button>
 			</div>
 			<br class="clear">
@@ -114,16 +114,16 @@ $ravanix_status_link = function ( $status, $label, $count ) use ( $status_filter
 			<thead>
 				<tr>
 					<td class="manage-column column-cb check-column"><input type="checkbox" id="rs-tests-select-all"></td>
-					<th class="column-primary"><?php esc_html_e( 'Title', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Status', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Number of questions', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Number of participants', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Display code (shortcode)', 'ravanix-lite' ); ?></th>
+					<th class="column-primary"><?php esc_html_e( 'Title', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Number of questions', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Number of participants', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Display code (shortcode)', 'ravanix' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php if ( empty( $tests ) ) : ?>
-					<tr><td colspan="6"><?php esc_html_e( 'No test has been created yet.', 'ravanix-lite' ); ?></td></tr>
+					<tr><td colspan="6"><?php esc_html_e( 'No test has been created yet.', 'ravanix' ); ?></td></tr>
 				<?php endif; ?>
 				<?php foreach ( $tests as $t ) : ?>
 					<?php
@@ -134,39 +134,39 @@ $ravanix_status_link = function ( $status, $label, $count ) use ( $status_filter
 					?>
 					<tr>
 						<th class="check-column"><input type="checkbox" name="test_ids[]" value="<?php echo intval( $t->id ); ?>" class="rs-row-checkbox"></th>
-						<td class="column-primary" data-colname="<?php esc_attr_e( 'Title', 'ravanix-lite' ); ?>">
+						<td class="column-primary" data-colname="<?php esc_attr_e( 'Title', 'ravanix' ); ?>">
 							<strong>
 								<a href="<?php echo esc_url( $edit_url ); ?>">
 									<?php echo esc_html( $t->title ); ?>
 								</a>
 							</strong>
 							<div class="row-actions">
-								<span class="edit"><a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Edit', 'ravanix-lite' ); ?></a></span>
+								<span class="edit"><a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Edit', 'ravanix' ); ?></a></span>
 								<?php if ( $view_url ) : ?>
-									 | <span class="view"><a href="<?php echo esc_url( $view_url ); ?>" target="_blank"><?php esc_html_e( 'View', 'ravanix-lite' ); ?></a></span>
+									 | <span class="view"><a href="<?php echo esc_url( $view_url ); ?>" target="_blank"><?php esc_html_e( 'View', 'ravanix' ); ?></a></span>
 								<?php endif; ?>
-								 | <span class="results"><a href="<?php echo esc_url( $results_url ); ?>"><?php esc_html_e( 'View Results', 'ravanix-lite' ); ?></a></span>
+								 | <span class="results"><a href="<?php echo esc_url( $results_url ); ?>"><?php esc_html_e( 'View Results', 'ravanix' ); ?></a></span>
 								 | <span class="delete">
 									<a href="<?php echo esc_url( $delete_url ); ?>"
-										onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this test and all of its results?', 'ravanix-lite' ) ); ?>');"
-										class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix-lite' ); ?></a>
+										onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete this test and all of its results?', 'ravanix' ) ); ?>');"
+										class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix' ); ?></a>
 								</span>
 							</div>
-							<button type="button" class="toggle-row"><span class="screen-reader-text"><?php esc_html_e( 'Show more details', 'ravanix-lite' ); ?></span></button>
+							<button type="button" class="toggle-row"><span class="screen-reader-text"><?php esc_html_e( 'Show more details', 'ravanix' ); ?></span></button>
 						</td>
-						<td data-colname="<?php esc_attr_e( 'Status', 'ravanix-lite' ); ?>">
+						<td data-colname="<?php esc_attr_e( 'Status', 'ravanix' ); ?>">
 							<?php if ( 'published' === $t->status ) : ?>
-								<span class="rs-badge rs-badge-green"><?php esc_html_e( 'Published', 'ravanix-lite' ); ?></span>
+								<span class="rs-badge rs-badge-green"><?php esc_html_e( 'Published', 'ravanix' ); ?></span>
 							<?php else : ?>
-								<span class="rs-badge rs-badge-gray"><?php esc_html_e( 'Draft', 'ravanix-lite' ); ?></span>
+								<span class="rs-badge rs-badge-gray"><?php esc_html_e( 'Draft', 'ravanix' ); ?></span>
 							<?php endif; ?>
 							<?php if ( ! empty( $t->woocommerce_product_id ) ) : ?>
-								<span class="rs-badge" style="background:#e6f6ea;color:#2a8a45;">💰 <?php esc_html_e( 'Paid', 'ravanix-lite' ); ?></span>
+								<span class="rs-badge" style="background:#e6f6ea;color:#2a8a45;">💰 <?php esc_html_e( 'Paid', 'ravanix' ); ?></span>
 							<?php endif; ?>
 						</td>
-						<td data-colname="<?php esc_attr_e( 'Number of questions', 'ravanix-lite' ); ?>"><?php echo intval( $t->question_count ); ?></td>
-						<td data-colname="<?php esc_attr_e( 'Number of participants', 'ravanix-lite' ); ?>"><?php echo intval( $t->result_count ); ?></td>
-						<td data-colname="<?php esc_attr_e( 'Display code (shortcode)', 'ravanix-lite' ); ?>"><code>[ravanix_test id="<?php echo intval( $t->id ); ?>"]</code></td>
+						<td data-colname="<?php esc_attr_e( 'Number of questions', 'ravanix' ); ?>"><?php echo intval( $t->question_count ); ?></td>
+						<td data-colname="<?php esc_attr_e( 'Number of participants', 'ravanix' ); ?>"><?php echo intval( $t->result_count ); ?></td>
+						<td data-colname="<?php esc_attr_e( 'Display code (shortcode)', 'ravanix' ); ?>"><code>[ravanix_test id="<?php echo intval( $t->id ); ?>"]</code></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>

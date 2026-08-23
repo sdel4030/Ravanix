@@ -28,7 +28,7 @@ $result = $wpdb->get_row( $wpdb->prepare(
 ) );
 
 if ( ! $result ) {
-	echo '<div class="wrap"><p>' . esc_html__( 'Result not found.', 'ravanix-lite' ) . '</p></div>';
+	echo '<div class="wrap"><p>' . esc_html__( 'Result not found.', 'ravanix' ) . '</p></div>';
 	return;
 }
 
@@ -48,7 +48,7 @@ $p_age      = isset( $p_meta['age']['value'] ) ? intval( $p_meta['age']['value']
 $p_gender_v = isset( $p_meta['gender']['key'] ) ? $p_meta['gender']['key'] : ( isset( $p_meta['gender']['value'] ) ? $p_meta['gender']['value'] : null );
 $p_gender   = in_array( $p_gender_v, array( 'male', 'female' ), true )
 	? $p_gender_v
-	: ( ( $p_gender_v === __( 'Male', 'ravanix-lite' ) ) ? 'male' : ( ( $p_gender_v === __( 'Female', 'ravanix-lite' ) ) ? 'female' : null ) );
+	: ( ( $p_gender_v === __( 'Male', 'ravanix' ) ) ? 'male' : ( ( $p_gender_v === __( 'Female', 'ravanix' ) ) ? 'female' : null ) );
 
 /**
 	 * The composite factor scores for this result, shown in a separate table below
@@ -81,11 +81,11 @@ if ( ! empty( $full_test->rank_results ) ) {
 }
 
 
-$participant = $result->user_id && $result->display_name ? $result->display_name : ( $result->guest_name ?: __( 'Guest', 'ravanix-lite' ) );
+$participant = $result->user_id && $result->display_name ? $result->display_name : ( $result->guest_name ?: __( 'Guest', 'ravanix' ) );
 ?>
 <div class="wrap rs-wrap" dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>">
 	<p>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=ravanix-results' ) ); ?>">&rarr; <?php esc_html_e( 'Back to results list', 'ravanix-lite' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=ravanix-results' ) ); ?>">&rarr; <?php esc_html_e( 'Back to results list', 'ravanix' ); ?></a>
 		<?php
 		/**
 		 * Adds extra links next to "Back to results list" (like the PDF download
@@ -96,15 +96,15 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 		do_action( 'ravanix_result_view_actions', $view_result_id );
 		?>
 	</p>
-	<h1><?php esc_html_e( 'Psychological profile:', 'ravanix-lite' ); ?> <?php echo esc_html( $participant ); ?></h1>
+	<h1><?php esc_html_e( 'Psychological profile:', 'ravanix' ); ?> <?php echo esc_html( $participant ); ?></h1>
 	<p class="description">
-		<?php esc_html_e( 'Test:', 'ravanix-lite' ); ?> <strong><?php echo esc_html( $result->test_title ); ?></strong> —
-		<?php esc_html_e( 'Date:', 'ravanix-lite' ); ?> <?php echo esc_html( date_i18n( 'Y/m/d H:i', strtotime( $result->submitted_at ) ) ); ?>
+		<?php esc_html_e( 'Test:', 'ravanix' ); ?> <strong><?php echo esc_html( $result->test_title ); ?></strong> —
+		<?php esc_html_e( 'Date:', 'ravanix' ); ?> <?php echo esc_html( date_i18n( 'Y/m/d H:i', strtotime( $result->submitted_at ) ) ); ?>
 	</p>
 
 	<?php if ( ! empty( $result->is_validity_flagged ) ) : ?>
 		<div class="notice notice-warning">
-			<p><strong><?php esc_html_e( 'Validity warning:', 'ravanix-lite' ); ?></strong> <?php echo esc_html( $result->validity_notes ); ?></p>
+			<p><strong><?php esc_html_e( 'Validity warning:', 'ravanix' ); ?></strong> <?php echo esc_html( $result->validity_notes ); ?></p>
 		</div>
 	<?php endif; ?>
 
@@ -126,7 +126,7 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 
 	<?php
 	$can_radar    = count( $scores ) >= 3;
-	$chart_labels = wp_json_encode( array_map( function( $s ) { return $s->dimension_name ?: ( __( 'Dimension #', 'ravanix-lite' ) . $s->dimension_id ); }, $scores ) );
+	$chart_labels = wp_json_encode( array_map( function( $s ) { return $s->dimension_name ?: ( __( 'Dimension #', 'ravanix' ) . $s->dimension_id ); }, $scores ) );
 	$chart_data   = wp_json_encode( array_map( 'floatval', wp_list_pluck( $scores, 'percentage' ) ) );
 	$chart_colors = wp_json_encode( array_map( function( $s ) { return $s->level_color ?: '#4a90d9'; }, $scores ) );
 	?>
@@ -137,9 +137,9 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 			data-colors="<?php echo esc_attr( $chart_colors ); ?>"
 			style="display:none;"></div>
 		<div class="rs-chart-tabs">
-			<button type="button" class="rs-chart-tab active" data-chart="bar"><?php esc_html_e( 'Bar chart', 'ravanix-lite' ); ?></button>
+			<button type="button" class="rs-chart-tab active" data-chart="bar"><?php esc_html_e( 'Bar chart', 'ravanix' ); ?></button>
 			<?php if ( $can_radar ) : ?>
-				<button type="button" class="rs-chart-tab" data-chart="radar"><?php esc_html_e( 'Radar chart', 'ravanix-lite' ); ?></button>
+				<button type="button" class="rs-chart-tab" data-chart="radar"><?php esc_html_e( 'Radar chart', 'ravanix' ); ?></button>
 			<?php endif; ?>
 		</div>
 		<div class="rs-chart-wrap" data-chart-view="bar" style="max-width:700px;height:<?php echo esc_attr( max( 340, count( $scores ) * 42 ) ); ?>px;">
@@ -153,22 +153,22 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 	<?php endif; ?>
 
 	<?php if ( ! empty( $composite_scores ) ) : ?>
-		<h2><?php esc_html_e( 'Primary (composite) factor scores', 'ravanix-lite' ); ?></h2>
+		<h2><?php esc_html_e( 'Primary (composite) factor scores', 'ravanix' ); ?></h2>
 		<table class="wp-list-table widefat striped" style="margin-bottom:25px;max-width:900px;">
 			<thead><tr>
-				<th><?php esc_html_e( 'Factor', 'ravanix-lite' ); ?></th>
-				<th><?php esc_html_e( 'Raw score', 'ravanix-lite' ); ?></th>
-				<th><?php esc_html_e( 'Percentage', 'ravanix-lite' ); ?></th>
-				<th><?php esc_html_e( 'T-score', 'ravanix-lite' ); ?></th>
-				<th><?php esc_html_e( 'Percentile rank', 'ravanix-lite' ); ?></th>
-				<th><?php esc_html_e( 'Level', 'ravanix-lite' ); ?></th>
-				<th><?php esc_html_e( 'Interpretation', 'ravanix-lite' ); ?></th>
+				<th><?php esc_html_e( 'Factor', 'ravanix' ); ?></th>
+				<th><?php esc_html_e( 'Raw score', 'ravanix' ); ?></th>
+				<th><?php esc_html_e( 'Percentage', 'ravanix' ); ?></th>
+				<th><?php esc_html_e( 'T-score', 'ravanix' ); ?></th>
+				<th><?php esc_html_e( 'Percentile rank', 'ravanix' ); ?></th>
+				<th><?php esc_html_e( 'Level', 'ravanix' ); ?></th>
+				<th><?php esc_html_e( 'Interpretation', 'ravanix' ); ?></th>
 			</tr></thead>
 			<tbody>
 				<?php foreach ( $composite_scores as $cs ) : ?>
 					<tr>
 						<td><strong><?php echo esc_html( $cs['name'] ); ?></strong></td>
-						<td><?php echo esc_html( $cs['raw_score'] . ' ' . __( 'From', 'ravanix-lite' ) . ' ' . $cs['max_score'] ); ?></td>
+						<td><?php echo esc_html( $cs['raw_score'] . ' ' . __( 'From', 'ravanix' ) . ' ' . $cs['max_score'] ); ?></td>
 						<td><?php echo esc_html( $cs['percentage'] ); ?>%</td>
 						<td><?php echo ( null !== $cs['t_score'] ) ? esc_html( $cs['t_score'] ) : '—'; ?></td>
 						<td><?php echo ( null !== $cs['percentile'] ) ? esc_html( $cs['percentile'] ) . '%' : '—'; ?></td>
@@ -182,19 +182,19 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 
 	<table class="wp-list-table widefat striped" style="margin-top:20px;max-width:900px;">
 		<thead><tr>
-			<th><?php esc_html_e( 'Dimension', 'ravanix-lite' ); ?></th>
-			<th><?php esc_html_e( 'Raw score', 'ravanix-lite' ); ?></th>
-			<th><?php esc_html_e( 'Percentage', 'ravanix-lite' ); ?></th>
-			<th><?php esc_html_e( 'T-score', 'ravanix-lite' ); ?></th>
-			<th><?php esc_html_e( 'Percentile rank', 'ravanix-lite' ); ?></th>
-			<th><?php esc_html_e( 'Level', 'ravanix-lite' ); ?></th>
-			<th><?php esc_html_e( 'Interpretation', 'ravanix-lite' ); ?></th>
+			<th><?php esc_html_e( 'Dimension', 'ravanix' ); ?></th>
+			<th><?php esc_html_e( 'Raw score', 'ravanix' ); ?></th>
+			<th><?php esc_html_e( 'Percentage', 'ravanix' ); ?></th>
+			<th><?php esc_html_e( 'T-score', 'ravanix' ); ?></th>
+			<th><?php esc_html_e( 'Percentile rank', 'ravanix' ); ?></th>
+			<th><?php esc_html_e( 'Level', 'ravanix' ); ?></th>
+			<th><?php esc_html_e( 'Interpretation', 'ravanix' ); ?></th>
 		</tr></thead>
 		<tbody>
 			<?php foreach ( $scores as $s ) : ?>
 				<tr>
-					<td><?php echo esc_html( $s->dimension_name ?: ( __( 'Dimension #', 'ravanix-lite' ) . $s->dimension_id ) ); ?></td>
-					<td><?php echo esc_html( $s->raw_score . ' ' . __( 'From', 'ravanix-lite' ) . ' ' . $s->max_score ); ?></td>
+					<td><?php echo esc_html( $s->dimension_name ?: ( __( 'Dimension #', 'ravanix' ) . $s->dimension_id ) ); ?></td>
+					<td><?php echo esc_html( $s->raw_score . ' ' . __( 'From', 'ravanix' ) . ' ' . $s->max_score ); ?></td>
 					<td><?php echo esc_html( $s->percentage ); ?>%</td>
 					<td>
 						<?php if ( null !== $s->t_score ) : ?>
@@ -213,4 +213,18 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+
+	<?php
+	/**
+	 * Fires after the dimension scores table, still inside the results wrap.
+	 * Ravanix Pro uses this to show a trend/timeline chart comparing this
+	 * identified user's scores across their repeated attempts of the same
+	 * test. $result->user_id is 0 for guest submissions, so implementations
+	 * of this action should skip guests (a guest has no stable identity to
+	 * track a trend against).
+	 *
+	 * @param object $result The full result row queried above (includes id, test_id, user_id, submitted_at, ...).
+	 */
+	do_action( 'ravanix_result_view_after_scores', $result );
+	?>
 </div>

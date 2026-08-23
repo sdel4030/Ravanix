@@ -21,65 +21,67 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 $settings = Ravanix_Settings::get();
 ?>
 <div class="wrap rs-wrap" dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>">
-	<h1><?php esc_html_e( 'Ravanix Settings', 'ravanix-lite' ); ?></h1>
+	<h1><?php esc_html_e( 'Ravanix Settings', 'ravanix' ); ?></h1>
 
 	<?php if ( isset( $_GET['saved'] ) ) : ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'ravanix-lite' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'ravanix' ); ?></p></div>
 	<?php endif; ?>
 
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<?php wp_nonce_field( 'ravanix_save_settings' ); ?>
 		<input type="hidden" name="action" value="ravanix_save_settings">
 
-		<h2><?php esc_html_e( 'Display questionnaires as a custom post type', 'ravanix-lite' ); ?></h2>
-		<p class="description"><?php esc_html_e( 'If enabled, every test — in addition to the shortcode (which still works) — will also be automatically viewable as a dedicated custom post type. This helps give it an independent URL, an English slug, and the ability to use tags to display "Related questionnaires".', 'ravanix-lite' ); ?></p>
+		<h2><?php esc_html_e( 'Display questionnaires as a custom post type', 'ravanix' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'If enabled, every test — in addition to the shortcode (which still works) — will also be automatically viewable as a dedicated custom post type. This helps give it an independent URL, an English slug, and the ability to use tags to display "Related questionnaires".', 'ravanix' ); ?></p>
 
 		<table class="form-table">
 			<tr>
-				<th><?php esc_html_e( 'Activation', 'ravanix-lite' ); ?></th>
+				<th><?php esc_html_e( 'Activation', 'ravanix' ); ?></th>
 				<td>
 					<label>
 						<input type="checkbox" name="enable_cpt" value="1" <?php checked( $settings['enable_cpt'], 1 ); ?>>
-						<?php esc_html_e( 'Display questionnaires as a custom post type', 'ravanix-lite' ); ?>
+						<?php esc_html_e( 'Display questionnaires as a custom post type', 'ravanix' ); ?>
 					</label>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="cpt_slug"><?php esc_html_e( 'Post type slug', 'ravanix-lite' ); ?></label></th>
+				<th><label for="cpt_slug"><?php esc_html_e( 'Post type slug', 'ravanix' ); ?></label></th>
 				<td>
 					<input type="text" id="cpt_slug" name="cpt_slug" class="regular-text" dir="ltr"
-						value="<?php echo esc_attr( $settings['cpt_slug'] ); ?>" placeholder="<?php echo esc_attr__( 'questionnaire', 'ravanix-lite' ); ?>">
-					<p class="description"><?php esc_html_e( 'Only English letters, numbers, and hyphens. Example: questionnaire', 'ravanix-lite' ); ?></p>
+						value="<?php echo esc_attr( $settings['cpt_slug'] ); ?>" placeholder="<?php echo esc_attr__( 'questionnaire', 'ravanix' ); ?>">
+					<p class="description"><?php esc_html_e( 'Only English letters, numbers, and hyphens. Example: questionnaire', 'ravanix' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="cpt_singular"><?php esc_html_e( 'Singular name', 'ravanix-lite' ); ?></label></th>
-				<td><input type="text" id="cpt_singular" name="cpt_singular" class="regular-text" value="<?php echo esc_attr( $settings['cpt_singular'] ); ?>" placeholder="<?php esc_attr_e( 'Questionnaire', 'ravanix-lite' ); ?>"></td>
+				<th><label for="cpt_singular"><?php esc_html_e( 'Singular name', 'ravanix' ); ?></label></th>
+				<td><input type="text" id="cpt_singular" name="cpt_singular" class="regular-text" value="<?php echo esc_attr( $settings['cpt_singular'] ); ?>" placeholder="<?php esc_attr_e( 'Questionnaire', 'ravanix' ); ?>"></td>
 			</tr>
 			<tr>
-				<th><label for="cpt_plural"><?php esc_html_e( 'Plural name', 'ravanix-lite' ); ?></label></th>
-				<td><input type="text" id="cpt_plural" name="cpt_plural" class="regular-text" value="<?php echo esc_attr( $settings['cpt_plural'] ); ?>" placeholder="<?php esc_attr_e( 'Questionnaires', 'ravanix-lite' ); ?>"></td>
+				<th><label for="cpt_plural"><?php esc_html_e( 'Plural name', 'ravanix' ); ?></label></th>
+				<td><input type="text" id="cpt_plural" name="cpt_plural" class="regular-text" value="<?php echo esc_attr( $settings['cpt_plural'] ); ?>" placeholder="<?php esc_attr_e( 'Questionnaires', 'ravanix' ); ?>"></td>
 			</tr>
 		</table>
 
 		<p class="description">
-			<?php esc_html_e( 'Site permalinks are refreshed automatically after saving these settings; there is no need to visit the "Permalinks" page manually.', 'ravanix-lite' ); ?>
+			<?php esc_html_e( 'Site permalinks are refreshed automatically after saving these settings; there is no need to visit the "Permalinks" page manually.', 'ravanix' ); ?>
 		</p>
 
-		<?php submit_button( __( 'Save Settings', 'ravanix-lite' ) ); ?>
+		<p class="description">
+			<?php esc_html_e( 'Site permalinks are refreshed automatically after saving these settings; there is no need to visit the "Permalinks" page manually.', 'ravanix' ); ?>
+		</p>
 
 		<hr>
 
-		<h2><?php esc_html_e( 'Participant info fields', 'ravanix-lite' ); ?></h2>
+		<h2><?php esc_html_e( 'Participant info fields', 'ravanix' ); ?></h2>
 		<p class="description">
-			<?php esc_html_e( 'If enabled, each of these fields is collected from the user along with every test form and will be visible in the "Participant Results" panel.', 'ravanix-lite' ); ?>
+			<?php esc_html_e( 'If enabled, each of these fields is collected from the user along with every test form and will be visible in the "Participant Results" panel.', 'ravanix' ); ?>
 		</p>
 		<table class="wp-list-table widefat striped" style="max-width:600px;">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Field', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Active', 'ravanix-lite' ); ?></th>
-					<th><?php esc_html_e( 'Required', 'ravanix-lite' ); ?></th>
+					<th><?php esc_html_e( 'Field', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Active', 'ravanix' ); ?></th>
+					<th><?php esc_html_e( 'Required', 'ravanix' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -93,34 +95,34 @@ $settings = Ravanix_Settings::get();
 			</tbody>
 		</table>
 
-		<?php submit_button( __( 'Save Settings', 'ravanix-lite' ), 'primary', 'submit2' ); ?>
+		<?php submit_button( __( 'Save Settings', 'ravanix' ) ); ?>
 	</form>
 
 	<hr>
 
-	<h2><?php esc_html_e( 'Plugin shortcodes', 'ravanix-lite' ); ?></h2>
+	<h2><?php esc_html_e( 'Plugin shortcodes', 'ravanix' ); ?></h2>
 	<table class="wp-list-table widefat striped" style="max-width:700px;">
 		<tbody>
 			<tr>
 				<td><code>[ravanix_test id="X"]</code></td>
-				<td><?php esc_html_e( 'Display a specific test for the user to take', 'ravanix-lite' ); ?></td>
+				<td><?php esc_html_e( 'Display a specific test for the user to take', 'ravanix' ); ?></td>
 			</tr>
 			<tr>
 				<td><code>[ravanix_test_list]</code></td>
-				<td><?php esc_html_e( 'List of all published tests', 'ravanix-lite' ); ?></td>
+				<td><?php esc_html_e( 'List of all published tests', 'ravanix' ); ?></td>
 			</tr>
 			<tr>
 				<td><code>[ravanix_my_results]</code></td>
-				<td><?php esc_html_e( 'A "My Results" dashboard for the logged-in user; includes a list of completed tests and a timeline chart for each test across repeated attempts (e.g. pre/post treatment)', 'ravanix-lite' ); ?></td>
+				<td><?php esc_html_e( 'A "My Results" dashboard for the logged-in user; includes a list of completed tests and a timeline chart for each test across repeated attempts (e.g. pre/post treatment)', 'ravanix' ); ?></td>
 			</tr>
 		</tbody>
 	</table>
 
 	<hr>
 
-	<h2><?php esc_html_e( 'Ravanix-related products and posts (psykey.ir)', 'ravanix-lite' ); ?></h2>
+	<h2><?php esc_html_e( 'Ravanix-related products and posts (psykey.ir)', 'ravanix' ); ?></h2>
 	<p class="description">
-		<?php esc_html_e( 'This section is updated automatically and periodically from psykey.ir, and has no effect on your plugin\'s or site\'s performance.', 'ravanix-lite' ); ?>
+		<?php esc_html_e( 'This section is updated automatically and periodically from psykey.ir, and has no effect on your plugin\'s or site\'s performance.', 'ravanix' ); ?>
 	</p>
 
 	<?php
@@ -137,7 +139,7 @@ $settings = Ravanix_Settings::get();
 		$feed = fetch_feed( $feed_url );
 
 		if ( is_wp_error( $feed ) || ! $feed ) {
-			echo '<p class="description">' . esc_html__( 'This list cannot be retrieved at the moment.', 'ravanix-lite' ) . ' <a href="' . esc_url( $fallback_url ) . '" target="_blank" rel="noopener">' . esc_html__( 'View directly on psykey.ir', 'ravanix-lite' ) . '</a></p>';
+			echo '<p class="description">' . esc_html__( 'This list cannot be retrieved at the moment.', 'ravanix' ) . ' <a href="' . esc_url( $fallback_url ) . '" target="_blank" rel="noopener">' . esc_html__( 'View directly on psykey.ir', 'ravanix' ) . '</a></p>';
 			return;
 		}
 
@@ -145,7 +147,7 @@ $settings = Ravanix_Settings::get();
 		$items = $feed->get_items( 0, $count );
 
 		if ( empty( $items ) ) {
-			echo '<p class="description">' . esc_html__( 'There is nothing to display at the moment.', 'ravanix-lite' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'There is nothing to display at the moment.', 'ravanix' ) . '</p>';
 			return;
 		}
 
@@ -159,13 +161,13 @@ $settings = Ravanix_Settings::get();
 
 	<div class="rs-feed-columns">
 		<div class="rs-feed-column">
-			<h3><?php esc_html_e( 'Ready-made questionnaire files (available for purchase)', 'ravanix-lite' ); ?></h3>
-			<p class="description"><?php esc_html_e( 'Ready-made questionnaires that can be imported directly into Ravanix, available for purchase from the psykey.ir shop.', 'ravanix-lite' ); ?></p>
+			<h3><?php esc_html_e( 'Ready-made questionnaire files (available for purchase)', 'ravanix' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Ready-made questionnaires that can be imported directly into Ravanix, available for purchase from the psykey.ir shop.', 'ravanix' ); ?></p>
 			<?php $ravanix_render_feed_column( 'https://psykey.ir/shop-category/ravanix/feed/', 'https://psykey.ir/shop-category/ravanix/', 6 ); ?>
 		</div>
 		<div class="rs-feed-column">
-			<h3><?php esc_html_e( 'Latest posts about Ravanix', 'ravanix-lite' ); ?></h3>
-			<p class="description"><?php esc_html_e( 'Tutorials, guides, and news about the Ravanix plugin from the psykey.ir blog.', 'ravanix-lite' ); ?></p>
+			<h3><?php esc_html_e( 'Latest posts about Ravanix', 'ravanix' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Tutorials, guides, and news about the Ravanix plugin from the psykey.ir blog.', 'ravanix' ); ?></p>
 			<?php $ravanix_render_feed_column( 'https://psykey.ir/category/ravanix/feed/', 'https://psykey.ir/category/ravanix/', 6 ); ?>
 		</div>
 	</div>
