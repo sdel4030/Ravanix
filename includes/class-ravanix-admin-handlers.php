@@ -48,7 +48,7 @@ class Ravanix_Admin_Handlers {
 
 	private function check( $action ) {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Unauthorized access', 'ravanix-lite' ) );
+			wp_die( esc_html__( 'Unauthorized access', 'ravanix' ) );
 		}
 		check_admin_referer( $action );
 	}
@@ -84,6 +84,8 @@ class Ravanix_Admin_Handlers {
 		// existing installs and with Ravanix Pro's JSON import/export format.
 		$text_direction = is_rtl() ? 'rtl' : 'ltr';
 		$rank_results   = isset( $_POST['rank_results'] ) ? 1 : 0;
+		$randomize_questions = isset( $_POST['randomize_questions'] ) ? 1 : 0;
+		$randomize_options   = isset( $_POST['randomize_options'] ) ? 1 : 0;
 		$featured_image_id = ! empty( $_POST['featured_image_id'] ) ? intval( $_POST['featured_image_id'] ) : null;
 		$raw_questions_per_page = isset( $_POST['questions_per_page'] ) ? sanitize_text_field( wp_unslash( $_POST['questions_per_page'] ) ) : '';
 		$questions_per_page     = ( '' !== $raw_questions_per_page && intval( $raw_questions_per_page ) > 0 ) ? intval( $raw_questions_per_page ) : null;
@@ -94,7 +96,7 @@ class Ravanix_Admin_Handlers {
 		$categories = implode( ', ', $all_categories );
 
 		if ( empty( $title ) ) {
-			wp_die( esc_html__( 'Test title is required.', 'ravanix-lite' ) );
+			wp_die( esc_html__( 'Test title is required.', 'ravanix' ) );
 		}
 
 		// If a custom slug was entered, make sure it's unique
@@ -121,6 +123,8 @@ class Ravanix_Admin_Handlers {
 			'categories'    => $categories,
 			'text_direction' => $text_direction,
 			'rank_results'   => $rank_results,
+			'randomize_questions' => $randomize_questions,
+			'randomize_options'   => $randomize_options,
 			'featured_image_id' => $featured_image_id,
 			'questions_per_page' => $questions_per_page,
 			'updated_at'    => current_time( 'mysql' ),
@@ -134,7 +138,7 @@ class Ravanix_Admin_Handlers {
 			$update_result = $wpdb->update( Ravanix_DB::tests(), $data, array( 'id' => $test_id ) );
 			if ( false === $update_result && $wpdb->last_error ) {
 				// A real database error; shown to the site admin for debugging
-				wp_die( esc_html__( 'Error saving data:', 'ravanix-lite' ) . ' ' . esc_html( $wpdb->last_error ) );
+				wp_die( esc_html__( 'Error saving data:', 'ravanix' ) . ' ' . esc_html( $wpdb->last_error ) );
 			}
 		} else {
 			if ( empty( $data['slug'] ) ) {
@@ -550,7 +554,7 @@ class Ravanix_Admin_Handlers {
 		$raw_numbers  = sanitize_text_field( wp_unslash( $_POST['question_numbers'] ?? '' ) );
 
 		if ( ! $test_id || ! $dimension_id ) {
-			wp_die( esc_html__( 'Information is incomplete.', 'ravanix-lite' ) );
+			wp_die( esc_html__( 'Information is incomplete.', 'ravanix' ) );
 		}
 
 		// This test's question list, in exactly the same order shown in the "Questions" tab

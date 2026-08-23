@@ -99,7 +99,7 @@ class Ravanix_Scoring {
 			// measures. When no interpretation range matches (either because
 			// none were defined, or the score falls outside all of them),
 			// that general description is shown instead of a "not defined" message.
-			$no_interpretation_message = ! empty( $dim->description ) ? $dim->description : __( 'No interpretation has been defined for this score range.', 'ravanix-lite' );
+			$no_interpretation_message = ! empty( $dim->description ) ? $dim->description : __( 'No interpretation has been defined for this score range.', 'ravanix' );
 
 			$scores[] = array(
 				'dimension_id'          => $dim->id,
@@ -117,7 +117,7 @@ class Ravanix_Scoring {
 				'interpretation_basis'  => 'raw',
 				'is_validity_scale'     => false,
 				'validity_threshold'    => null,
-				'level_label'           => $interpretation ? $interpretation->level_label : __( 'Unspecified', 'ravanix-lite' ),
+				'level_label'           => $interpretation ? $interpretation->level_label : __( 'Unspecified', 'ravanix' ),
 				'level_color'           => $interpretation ? $interpretation->level_color : '#999999',
 				'description'           => $interpretation ? $interpretation->description : $no_interpretation_message,
 			);

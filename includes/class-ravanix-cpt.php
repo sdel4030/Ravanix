@@ -70,21 +70,21 @@ class Ravanix_CPT {
 			'name'               => $plural,
 			'singular_name'      => $singular,
 			/* translators: %s: singular label of the questionnaire post type, as configured by the site admin. */
-			'add_new_item'       => sprintf( __( 'Add new %s', 'ravanix-lite' ), $singular ),
+			'add_new_item'       => sprintf( __( 'Add new %s', 'ravanix' ), $singular ),
 			/* translators: %s: singular label of the questionnaire post type, as configured by the site admin. */
-			'add_new'            => sprintf( __( 'Add %s', 'ravanix-lite' ), $singular ),
+			'add_new'            => sprintf( __( 'Add %s', 'ravanix' ), $singular ),
 			/* translators: %s: singular label of the questionnaire post type, as configured by the site admin. */
-			'edit_item'          => sprintf( __( 'Edit %s', 'ravanix-lite' ), $singular ),
+			'edit_item'          => sprintf( __( 'Edit %s', 'ravanix' ), $singular ),
 			/* translators: %s: singular label of the questionnaire post type, as configured by the site admin. */
-			'new_item'           => sprintf( __( 'New %s', 'ravanix-lite' ), $singular ),
+			'new_item'           => sprintf( __( 'New %s', 'ravanix' ), $singular ),
 			/* translators: %s: singular label of the questionnaire post type, as configured by the site admin. */
-			'view_item'          => sprintf( __( 'View %s', 'ravanix-lite' ), $singular ),
+			'view_item'          => sprintf( __( 'View %s', 'ravanix' ), $singular ),
 			/* translators: %s: plural label of the questionnaire post type, as configured by the site admin. */
-			'search_items'       => sprintf( __( 'Search %s', 'ravanix-lite' ), $plural ),
-			'not_found'          => __( 'No items found', 'ravanix-lite' ),
-			'not_found_in_trash' => __( 'No items found in the trash', 'ravanix-lite' ),
+			'search_items'       => sprintf( __( 'Search %s', 'ravanix' ), $plural ),
+			'not_found'          => __( 'No items found', 'ravanix' ),
+			'not_found_in_trash' => __( 'No items found in the trash', 'ravanix' ),
 			/* translators: %s: plural label of the questionnaire post type, as configured by the site admin. */
-			'all_items'          => sprintf( __( 'All %s', 'ravanix-lite' ), $plural ),
+			'all_items'          => sprintf( __( 'All %s', 'ravanix' ), $plural ),
 			'menu_name'          => $plural,
 		);
 
@@ -271,7 +271,7 @@ class Ravanix_CPT {
 			return $content;
 		}
 
-		$block = '<div class="rs-related-questionnaires"><h3>' . esc_html__( 'Related Questionnaires', 'ravanix-lite' ) . '</h3><ul>';
+		$block = '<div class="rs-related-questionnaires"><h3>' . esc_html__( 'Related Questionnaires', 'ravanix' ) . '</h3><ul>';
 		while ( $related->have_posts() ) {
 			$related->the_post();
 			$block .= '<li><a href="' . esc_url( get_permalink() ) . '">' . esc_html( get_the_title() ) . '</a></li>';

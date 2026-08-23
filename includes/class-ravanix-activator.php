@@ -36,6 +36,8 @@ class Ravanix_Activator {
 			cpt_post_id BIGINT UNSIGNED NULL,
 			text_direction VARCHAR(10) NOT NULL DEFAULT 'rtl',
 			rank_results TINYINT(1) NOT NULL DEFAULT 0,
+			randomize_questions TINYINT(1) NOT NULL DEFAULT 0,
+			randomize_options TINYINT(1) NOT NULL DEFAULT 0,
 			featured_image_id BIGINT UNSIGNED NULL,
 			questions_per_page SMALLINT NULL,
 			execution_limit VARCHAR(20) NOT NULL DEFAULT 'unlimited',

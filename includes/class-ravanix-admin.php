@@ -10,8 +10,8 @@ class Ravanix_Admin {
 
 	public function register_menu() {
 		add_menu_page(
-			__( 'Ravanix', 'ravanix-lite' ),
-			__( 'Ravanix', 'ravanix-lite' ),
+			__( 'Ravanix', 'ravanix' ),
+			__( 'Ravanix', 'ravanix' ),
 			'manage_options',
 			'ravanix',
 			array( $this, 'render_tests_list' ),
@@ -29,10 +29,10 @@ class Ravanix_Admin {
 		$submenus = apply_filters(
 			'ravanix_admin_submenus',
 			array(
-				array( __( 'All Tests', 'ravanix-lite' ), __( 'All Tests', 'ravanix-lite' ), 'manage_options', 'ravanix', array( $this, 'render_tests_list' ) ),
-				array( __( 'Add New Test', 'ravanix-lite' ), __( 'Add New Test', 'ravanix-lite' ), 'manage_options', 'ravanix-edit-test', array( $this, 'render_edit_test' ) ),
-				array( __( 'Participant Results', 'ravanix-lite' ), __( 'Participant Results', 'ravanix-lite' ), 'manage_options', 'ravanix-results', array( $this, 'render_results_list' ) ),
-				array( __( 'Settings', 'ravanix-lite' ), __( 'Settings', 'ravanix-lite' ), 'manage_options', 'ravanix-settings', array( $this, 'render_settings' ) ),
+				array( __( 'All Tests', 'ravanix' ), __( 'All Tests', 'ravanix' ), 'manage_options', 'ravanix', array( $this, 'render_tests_list' ) ),
+				array( __( 'Add New Test', 'ravanix' ), __( 'Add New Test', 'ravanix' ), 'manage_options', 'ravanix-edit-test', array( $this, 'render_edit_test' ) ),
+				array( __( 'Participant Results', 'ravanix' ), __( 'Participant Results', 'ravanix' ), 'manage_options', 'ravanix-results', array( $this, 'render_results_list' ) ),
+				array( __( 'Settings', 'ravanix' ), __( 'Settings', 'ravanix' ), 'manage_options', 'ravanix-settings', array( $this, 'render_settings' ) ),
 			)
 		);
 
@@ -47,8 +47,8 @@ class Ravanix_Admin {
 		if ( apply_filters( 'ravanix_show_upgrade_menu_item', true ) ) {
 			add_submenu_page(
 				'ravanix',
-				__( 'Upgrade to Pro', 'ravanix-lite' ),
-				'<span style="color:#e0a72e;">' . __( 'Upgrade to Pro', 'ravanix-lite' ) . '</span>',
+				__( 'Upgrade to Pro', 'ravanix' ),
+				'<span style="color:#e0a72e;">' . __( 'Upgrade to Pro', 'ravanix' ) . '</span>',
 				'manage_options',
 				'ravanix-upgrade',
 				array( $this, 'render_upgrade' )
@@ -73,16 +73,16 @@ class Ravanix_Admin {
 			'ravanix-admin',
 			'ravanixAdminL10n',
 			array(
-				'chooseImageTitle'       => __( 'Select Featured Image', 'ravanix-lite' ),
-				'useImageButton'         => __( 'Use this image', 'ravanix-lite' ),
-				'basisHintTScore'        => __( 'This dimension is interpreted based on the T-score; enter the numbers above accordingly (e.g. 65 to 80).', 'ravanix-lite' ),
-				'basisHintRaw'           => __( 'This dimension is interpreted based on the raw score.', 'ravanix-lite' ),
-				'optionTextPlaceholder'  => __( 'Option text', 'ravanix-lite' ),
-				'optionValuePlaceholder' => __( 'Value', 'ravanix-lite' ),
-				'chartProfileLabel'      => __( 'Profile', 'ravanix-lite' ),
-				'chooseDimensionPlaceholder' => __( '— Select dimension —', 'ravanix-lite' ),
-				'reverseLabel'           => __( 'Reverse', 'ravanix-lite' ),
-				'weightPlaceholder'      => __( 'Weight', 'ravanix-lite' ),
+				'chooseImageTitle'       => __( 'Select Featured Image', 'ravanix' ),
+				'useImageButton'         => __( 'Use this image', 'ravanix' ),
+				'basisHintTScore'        => __( 'This dimension is interpreted based on the T-score; enter the numbers above accordingly (e.g. 65 to 80).', 'ravanix' ),
+				'basisHintRaw'           => __( 'This dimension is interpreted based on the raw score.', 'ravanix' ),
+				'optionTextPlaceholder'  => __( 'Option text', 'ravanix' ),
+				'optionValuePlaceholder' => __( 'Value', 'ravanix' ),
+				'chartProfileLabel'      => __( 'Profile', 'ravanix' ),
+				'chooseDimensionPlaceholder' => __( '— Select dimension —', 'ravanix' ),
+				'reverseLabel'           => __( 'Reverse', 'ravanix' ),
+				'weightPlaceholder'      => __( 'Weight', 'ravanix' ),
 			)
 		);
 	}

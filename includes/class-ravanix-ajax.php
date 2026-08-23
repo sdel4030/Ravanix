@@ -26,16 +26,16 @@ class Ravanix_Ajax {
 		$raw_answers = isset( $_POST['answers'] ) ? (array) wp_unslash( $_POST['answers'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each answer value is floatval()'d individually below before use.
 
 		if ( ! $test_id || empty( $raw_answers ) ) {
-			wp_send_json_error( array( 'message' => __( 'Answers are incomplete.', 'ravanix-lite' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Answers are incomplete.', 'ravanix' ) ) );
 		}
 
 		$test = Ravanix_DB::get_full_test( $test_id );
 		if ( ! $test || 'published' !== $test->status ) {
-			wp_send_json_error( array( 'message' => __( 'Test not found.', 'ravanix-lite' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Test not found.', 'ravanix' ) ) );
 		}
 
 		if ( $test->require_login && ! is_user_logged_in() ) {
-			wp_send_json_error( array( 'message' => __( 'You must be logged in to submit answers.', 'ravanix-lite' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You must be logged in to submit answers.', 'ravanix' ) ) );
 		}
 
 		$user_id     = get_current_user_id();
@@ -44,7 +44,7 @@ class Ravanix_Ajax {
 
 		// Rate-limit submissions (anti-spam/bot)
 		if ( ! Ravanix_Access::check_rate_limit( $ip ) ) {
-			wp_send_json_error( array( 'message' => __( 'You\'ve made too many requests; please wait a bit and try again.', 'ravanix-lite' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You\'ve made too many requests; please wait a bit and try again.', 'ravanix' ) ) );
 		}
 
 		// Check the honeypot and minimum completion time (anti-spam/bot)
@@ -52,7 +52,7 @@ class Ravanix_Ajax {
 		$elapsed_ms = isset( $_POST['elapsed_ms'] ) ? intval( $_POST['elapsed_ms'] ) : null;
 		if ( ! Ravanix_Access::check_honeypot_and_timing( $honeypot, $elapsed_ms ) ) {
 			// A generic message the bot can't use to detect the check
-			wp_send_json_error( array( 'message' => __( 'Something went wrong. Please try again.', 'ravanix-lite' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Something went wrong. Please try again.', 'ravanix' ) ) );
 		}
 
 		/**
@@ -81,7 +81,7 @@ class Ravanix_Ajax {
 		$answers = array();
 		foreach ( $test->questions as $q ) {
 			if ( ! isset( $raw_answers[ $q->id ] ) || '' === $raw_answers[ $q->id ] ) {
-				wp_send_json_error( array( 'message' => __( 'Please answer all the questions.', 'ravanix-lite' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Please answer all the questions.', 'ravanix' ) ) );
 			}
 			$answers[ $q->id ] = floatval( $raw_answers[ $q->id ] );
 		}
@@ -103,7 +103,7 @@ class Ravanix_Ajax {
 				if ( ! empty( $conf['required'] ) && '' === $value ) {
 					wp_send_json_error( array(
 						/* translators: %s: the label of the missing required field */
-						'message' => sprintf( __( 'Please fill in the required field "%s".', 'ravanix-lite' ), $conf['label'] ),
+						'message' => sprintf( __( 'Please fill in the required field "%s".', 'ravanix' ), $conf['label'] ),
 					) );
 				}
 
@@ -128,7 +128,7 @@ class Ravanix_Ajax {
 
 				$participant_meta[ $key ] = array(
 					'label' => $conf['label'],
-					'value' => ( 'gender' === $key ) ? ( 'male' === $value ? __( 'Male', 'ravanix-lite' ) : __( 'Female', 'ravanix-lite' ) ) : $value,
+					'value' => ( 'gender' === $key ) ? ( 'male' === $value ? __( 'Male', 'ravanix' ) : __( 'Female', 'ravanix' ) ) : $value,
 				);
 				// For gender, also store a stable, non-translatable key ('male'/'female')
 				// alongside the translated display label above. Only the 'value' label is

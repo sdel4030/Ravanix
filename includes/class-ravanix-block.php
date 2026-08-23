@@ -37,7 +37,7 @@ class Ravanix_Block {
 			true
 		);
 
-		wp_set_script_translations( 'ravanix-block-editor', 'ravanix-lite', RAVANIX_PLUGIN_DIR . 'languages' );
+		wp_set_script_translations( 'ravanix-block-editor', 'ravanix', RAVANIX_PLUGIN_DIR . 'languages' );
 
 		global $wpdb;
 		$tests = $wpdb->get_results( "SELECT id, title FROM " . Ravanix_DB::tests() . " WHERE status = 'published' ORDER BY title ASC" );
@@ -59,8 +59,8 @@ class Ravanix_Block {
 		register_block_type(
 			'ravanix/questionnaire',
 			array(
-				'title'           => __( 'Ravanix – Questionnaire', 'ravanix-lite' ),
-				'description'     => __( 'Display a specific questionnaire, or a list of all published questionnaires as a list or a grid.', 'ravanix-lite' ),
+				'title'           => __( 'Ravanix – Questionnaire', 'ravanix' ),
+				'description'     => __( 'Display a specific questionnaire, or a list of all published questionnaires as a list or a grid.', 'ravanix' ),
 				'category'        => 'widgets',
 				'icon'            => 'forms',
 				'editor_script'   => 'ravanix-block-editor',
@@ -101,7 +101,7 @@ class Ravanix_Block {
 		if ( 'single' === $attributes['mode'] ) {
 			if ( ! $attributes['testId'] ) {
 				return current_user_can( 'manage_options' )
-					? '<p class="rs-error">' . esc_html__( 'Select a questionnaire from the block settings.', 'ravanix-lite' ) . '</p>'
+					? '<p class="rs-error">' . esc_html__( 'Select a questionnaire from the block settings.', 'ravanix' ) . '</p>'
 					: '';
 			}
 			return $shortcodes->render_test(

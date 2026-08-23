@@ -16,12 +16,12 @@ class Ravanix_Settings {
 			'cpt_plural'    => 'Questionnaires',
 			'cpt_menu_icon' => 'dashicons-clipboard',
 			'participant_fields' => array(
-				'full_name' => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Full name', 'ravanix-lite' ) ),
-				'gender'    => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Gender', 'ravanix-lite' ) ),
-				'education' => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Education', 'ravanix-lite' ) ),
-				'mobile'    => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Mobile number', 'ravanix-lite' ) ),
-				'email'     => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Email address', 'ravanix-lite' ) ),
-				'age'       => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Age', 'ravanix-lite' ) ),
+				'full_name' => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Full name', 'ravanix' ) ),
+				'gender'    => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Gender', 'ravanix' ) ),
+				'education' => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Education', 'ravanix' ) ),
+				'mobile'    => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Mobile number', 'ravanix' ) ),
+				'email'     => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Email address', 'ravanix' ) ),
+				'age'       => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Age', 'ravanix' ) ),
 			),
 		);
 	}

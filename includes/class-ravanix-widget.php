@@ -24,9 +24,9 @@ class Ravanix_Tests_Widget extends WP_Widget {
 	public function __construct() {
 		parent::__construct(
 			'ravanix_tests_widget',
-			__( 'Ravanix: Tests List', 'ravanix-lite' ),
+			__( 'Ravanix: Tests List', 'ravanix' ),
 			array(
-				'description' => __( 'Displays a list of published questionnaires.', 'ravanix-lite' ),
+				'description' => __( 'Displays a list of published questionnaires.', 'ravanix' ),
 			)
 		);
 	}
@@ -34,7 +34,7 @@ class Ravanix_Tests_Widget extends WP_Widget {
 	public function widget( $args, $instance ) {
 		global $wpdb;
 
-		$title = ! empty( $instance['title'] ) ? $instance['title'] : __( 'Questionnaires', 'ravanix-lite' );
+		$title = ! empty( $instance['title'] ) ? $instance['title'] : __( 'Questionnaires', 'ravanix' );
 		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
 		$count = ! empty( $instance['count'] ) ? max( 1, intval( $instance['count'] ) ) : 5;
@@ -78,22 +78,22 @@ class Ravanix_Tests_Widget extends WP_Widget {
 		// If the custom post type isn't enabled, there's no link for these items;
 		// this is just a reminder to the site admin (not the visitor) to enable that setting.
 		if ( ! $cpt_enabled && current_user_can( 'manage_options' ) ) {
-			echo '<p class="description" style="font-size:11px;">' . esc_html__( 'To make these items clickable, enable "Custom post type" in Ravanix Settings.', 'ravanix-lite' ) . '</p>';
+			echo '<p class="description" style="font-size:11px;">' . esc_html__( 'To make these items clickable, enable "Custom post type" in Ravanix Settings.', 'ravanix' ) . '</p>';
 		}
 
 		echo $args['after_widget']; // phpcs:ignore
 	}
 
 	public function form( $instance ) {
-		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Questionnaires', 'ravanix-lite' );
+		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Questionnaires', 'ravanix' );
 		$count = isset( $instance['count'] ) ? intval( $instance['count'] ) : 5;
 		?>
 		<p>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php esc_html_e( 'Title:', 'ravanix-lite' ); ?></label>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php esc_html_e( 'Title:', 'ravanix' ); ?></label>
 			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>">
 		</p>
 		<p>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'count' ) ); ?>"><?php esc_html_e( 'Number of tests to display:', 'ravanix-lite' ); ?></label>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'count' ) ); ?>"><?php esc_html_e( 'Number of tests to display:', 'ravanix' ); ?></label>
 			<input class="tiny-text" id="<?php echo esc_attr( $this->get_field_id( 'count' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'count' ) ); ?>" type="number" min="1" max="50" step="1" value="<?php echo esc_attr( $count ); ?>">
 		</p>
 		<?php
