@@ -1,6 +1,57 @@
 (function ($) {
 	'use strict';
 
+	/* ---------------- Branching / skip logic ---------------- */
+
+	/**
+	 * Shows/hides each question that has a "show only if" condition
+	 * (data-branch-question / data-branch-value, set by the admin in the
+	 * question's settings), based on the currently selected answer to the
+	 * question it depends on. Always re-evaluates every conditional question
+	 * from scratch (not just the one that just changed), since one answer can
+	 * be the branch source for several other questions at once. Server-side,
+	 * Ravanix_Ajax::submit_test() independently re-derives the exact same
+	 * active/inactive set from the submitted answers -- this client-side pass
+	 * only controls what the participant sees and can be required to answer;
+	 * it is never trusted as the actual security/scoring boundary.
+	 */
+	function applyBranching($container) {
+		var $form = $container.find('.rs-test-form');
+		var changed = false;
+
+		$form.find('.rs-question[data-branch-question]').each(function () {
+			var $q = $(this);
+			var depId = $q.data('branch-question');
+			var expected = String($q.data('branch-value'));
+			var actual = $form.find('input[name="answers[' + depId + ']"]:checked').val();
+			var isActive = (typeof actual !== 'undefined') && (String(actual) === expected);
+			var wasHidden = $q.hasClass('rs-question-hidden');
+
+			if (isActive === wasHidden) { changed = true; }
+			$q.toggleClass('rs-question-hidden', !isActive);
+		});
+
+		if (changed) {
+			renumberQuestions($container);
+			// The active-question set changed, so the progress denominator did too.
+			getState($container).totalQuestions = null;
+			updateProgress($container);
+		}
+	}
+
+	/**
+	 * Renumbers the "1.", "2.", ... prefix on each visible question in display
+	 * order, so hidden (skipped) questions never leave a gap in the numbering
+	 * the participant sees.
+	 */
+	function renumberQuestions($container) {
+		var n = 0;
+		$container.find('.rs-question:not(.rs-question-hidden) .rs-q-num-live').each(function () {
+			n++;
+			$(this).text(n + '.');
+		});
+	}
+
 	/* ---------------- Per-form state cache (avoids a full DOM scan on every click, important for long questionnaires like the 240-item NEO) ---------------- */
 
 	function getState($container) {
@@ -10,7 +61,7 @@
 			$container.data('rsState', state);
 		}
 		if (null === state.totalQuestions) {
-			state.totalQuestions = $container.find('.rs-question').length;
+			state.totalQuestions = $container.find('.rs-question:not(.rs-question-hidden)').length;
 		}
 		return state;
 	}
@@ -105,16 +156,30 @@
 	function restoreDraft($container, draft) {
 		var $form = $container.find('.rs-test-form');
 
+		// Comparing name/value via JS equality inside .filter(), rather than
+		// interpolating the saved value into a CSS attribute selector string,
+		// means a tampered/unusual localStorage value (someone editing their
+		// own browser storage, deliberately or by accident) can only fail to
+		// match -- it can never break the selector itself and abort the whole restore.
+		var $allRadios = $form.find('input[type="radio"]');
 		Object.keys(draft.answers || {}).forEach(function (qid) {
-			$form.find('input[name="answers[' + qid + ']"][value="' + draft.answers[qid] + '"]').prop('checked', true);
+			var name = 'answers[' + qid + ']';
+			var wanted = String(draft.answers[qid]);
+			$allRadios.filter(function () {
+				return $(this).attr('name') === name && String(this.value) === wanted;
+			}).prop('checked', true);
 		});
+		var $allParticipantFields = $form.find('.rs-participant-field');
 		Object.keys(draft.participant || {}).forEach(function (key) {
-			$form.find('.rs-participant-field[data-field-key="' + key + '"] input, .rs-participant-field[data-field-key="' + key + '"] select').val(draft.participant[key]);
+			$allParticipantFields.filter(function () {
+				return $(this).data('field-key') === key;
+			}).find('input, select').val(draft.participant[key]);
 		});
 		if (draft.guest_name) {
 			$form.find('input[name="guest_name"]').val(draft.guest_name);
 		}
 
+		applyBranching($container);
 		recomputeAnsweredState($container);
 		updateProgress($container);
 		goToPage($container, draft.page || 0);
@@ -174,7 +239,7 @@
 			}
 		});
 
-		$scope.find('.rs-question').each(function () {
+		$scope.find('.rs-question:not(.rs-question-hidden)').each(function () {
 			var $q  = $(this);
 			var qid = $q.data('question-id');
 			var val = $form.find('input[name="answers[' + qid + ']"]:checked').val();
@@ -195,12 +260,25 @@
 		$container.data('start-time', Date.now());
 		$container.find('.rs-test-intro').hide();
 		$container.find('.rs-test-form').show();
+		applyBranching($container);
 		goToPage($container, 0);
 	}
 
-	$(document).on('click', '.rs-btn-start:not(.rs-btn-start-with-code)', function () {
+	$(document).on('click', '.rs-btn-start:not(.rs-btn-start-with-code):not(.rs-btn-resume)', function () {
 		var $container = $(this).closest('.rs-test-container');
 		startTest($container);
+	});
+
+	/* ---------------- Informed consent ---------------- */
+
+	$(document).on('change', '.rs-consent-checkbox input[type="checkbox"]', function () {
+		var $container = $(this).closest('.rs-test-container');
+		var agreed = $(this).is(':checked');
+		$container.find('.rs-consent-agreed-field').val(agreed ? '1' : '0');
+		$container.find('.rs-btn-start').prop('disabled', !agreed);
+		if (agreed) {
+			$container.find('.rs-consent-required-note').hide();
+		}
 	});
 
 	$(document).on('click', '.rs-btn-start-with-code', function () {
@@ -243,8 +321,21 @@
 		$('.rs-test-container').each(function () {
 			var $container = $(this);
 			var testId = $container.data('test-id');
-			var draft  = loadDraft(testId);
+			var localDraft  = loadDraft(testId);
+			var serverDraft = $container.attr('data-server-draft');
+			serverDraft = serverDraft ? JSON.parse(serverDraft) : null;
+
+			// Prefer whichever draft is more recent; a server draft only exists
+			// at all for a logged-in participant on a Save & Resume-enabled test
+			// (see the PHP template), so this never overrides a same-device
+			// localStorage draft with something older.
+			var draft = localDraft;
+			if (serverDraft && (!localDraft || serverDraft.saved_at >= localDraft.saved_at)) {
+				draft = serverDraft;
+			}
+
 			if (draft && (Object.keys(draft.answers || {}).length || Object.keys(draft.participant || {}).length)) {
+				$container.data('rsPendingDraft', draft);
 				$container.find('.rs-resume-banner').show();
 			}
 		});
@@ -252,8 +343,7 @@
 
 	$(document).on('click', '.rs-btn-resume', function () {
 		var $container = $(this).closest('.rs-test-container');
-		var testId = $container.data('test-id');
-		var draft  = loadDraft(testId);
+		var draft = $container.data('rsPendingDraft') || loadDraft($container.data('test-id'));
 
 		startTest($container);
 
@@ -262,8 +352,72 @@
 
 	$(document).on('click', '.rs-btn-restart', function () {
 		var $container = $(this).closest('.rs-test-container');
-		clearDraft($container.data('test-id'));
+		var testId = $container.data('test-id');
+		clearDraft(testId);
 		$container.find('.rs-resume-banner').hide();
+
+		if (Ravanix_Frontend.is_logged_in && '1' === String($container.data('save-resume'))) {
+			$.ajax({
+				url: Ravanix_Frontend.ajax_url,
+				method: 'POST',
+				data: { action: 'ravanix_delete_draft', nonce: Ravanix_Frontend.nonce, test_id: testId }
+			});
+		}
+	});
+
+	/* ---------------- Explicit "Save my progress" button ---------------- */
+
+	$(document).on('click', '.rs-btn-save-progress', function () {
+		var $btn       = $(this);
+		var $container = $btn.closest('.rs-test-container');
+		var testId     = $container.data('test-id');
+		var $status    = $container.find('.rs-save-progress-status');
+
+		saveDraft($container); // Always: the existing, immediate browser-local save.
+
+		if (!Ravanix_Frontend.is_logged_in) {
+			$status.text(Ravanix_Frontend.i18n.progress_saved);
+			return;
+		}
+
+		var $form = $container.find('.rs-test-form');
+		var answers = {};
+		var participant = {};
+		$form.find('.rs-question').each(function () {
+			var qid = $(this).data('question-id');
+			var val = $form.find('input[name="answers[' + qid + ']"]:checked').val();
+			if (typeof val !== 'undefined') { answers[qid] = val; }
+		});
+		$form.find('.rs-participant-field').each(function () {
+			var key = $(this).data('field-key');
+			var val = $(this).find('input, select').val();
+			if (val) { participant[key] = val; }
+		});
+
+		var payload = {
+			action: 'ravanix_save_draft',
+			nonce: Ravanix_Frontend.nonce,
+			test_id: testId,
+			page: parseInt($form.data('current-page') || 0, 10)
+		};
+		Object.keys(answers).forEach(function (qid) { payload['answers[' + qid + ']'] = answers[qid]; });
+		Object.keys(participant).forEach(function (key) { payload['participant[' + key + ']'] = participant[key]; });
+
+		$btn.prop('disabled', true);
+		$status.text(Ravanix_Frontend.i18n.saving_progress);
+
+		$.ajax({
+			url: Ravanix_Frontend.ajax_url,
+			method: 'POST',
+			traditional: true,
+			data: payload
+		}).done(function (res) {
+			$status.text(res.success ? Ravanix_Frontend.i18n.progress_saved : Ravanix_Frontend.i18n.progress_save_error);
+		}).fail(function () {
+			$status.text(Ravanix_Frontend.i18n.progress_save_error);
+		}).always(function () {
+			$btn.prop('disabled', false);
+		});
 	});
 
 	$(document).on('change', '.rs-question input[type="radio"]', function () {
@@ -271,8 +425,9 @@
 		var $question  = $(this).closest('.rs-question');
 		$question.removeClass('rs-question-missing');
 		markAnswered($container, $question.data('question-id'));
+		applyBranching($container);
 		updateProgress($container);
-		saveDraft($container);
+		scheduleSaveDraft($container);
 	});
 
 	$(document).on('input change', '.rs-participant-field input, .rs-participant-field select', function () {
@@ -329,10 +484,10 @@
 		var participant = {};
 		var guestName = $form.find('input[name="guest_name"]').val() || '';
 
-		$form.find('.rs-question').each(function () {
+		$form.find('.rs-question:not(.rs-question-hidden)').each(function () {
 			var qid = $(this).data('question-id');
 			var val = $form.find('input[name="answers[' + qid + ']"]:checked').val();
-			answers[qid] = val;
+			if (typeof val !== 'undefined') { answers[qid] = val; }
 		});
 		$form.find('.rs-participant-field').each(function () {
 			var key = $(this).data('field-key');
@@ -346,6 +501,7 @@
 			guest_name: guestName,
 			ravanix_hp: $form.find('input[name="ravanix_hp"]').val() || '',
 			access_code: $form.find('.rs-hidden-access-code').val() || '',
+			consent_agreed: $form.find('.rs-consent-agreed-field').val() || '0',
 			elapsed_ms: $container.data('start-time') ? (Date.now() - $container.data('start-time')) : ''
 		};
 		// Question answers and participant fields are sent flat (not nested) so we
@@ -384,7 +540,12 @@
 		$container.find('.rs-test-form').hide();
 
 		var canRadar = data.scores.length >= 3;
-		var html = '<div class="rs-branding-banner"><a href="https://psykey.ir" target="_blank" rel="noopener">' + escapeHtml(Ravanix_Frontend.i18n.branding_tagline) + '</a></div>';
+		// Off unless the admin explicitly opted in (Ravanix Settings -> Branding);
+		// see Guideline 10 -- credit links/displays must be optional and default
+		// to not showing.
+		var html = Ravanix_Frontend.show_branding
+			? '<div class="rs-branding-banner"><a href="https://psykey.ir" target="_blank" rel="noopener">' + escapeHtml(Ravanix_Frontend.i18n.branding_tagline) + '</a></div>'
+			: '';
 		html += '<h2 class="rs-result-title">' + Ravanix_Frontend.i18n.your_profile + ' ' + escapeHtml(data.test_title) + '</h2>';
 
 		if (data.pdf_url) {
