@@ -260,4 +260,22 @@
 		});
 	});
 
+	/**
+	 * "Delete data on uninstall" (Danger zone, Settings page): requires an
+	 * explicit confirmation click at the exact moment the admin turns this on,
+	 * in addition to the warning text already printed next to the checkbox —
+	 * so the consequence is seen and acknowledged, not just theoretically readable.
+	 */
+	$(function () {
+		var $deleteCheckbox = $('input[name="delete_data_on_uninstall"]');
+		if (!$deleteCheckbox.length) {
+			return;
+		}
+		$deleteCheckbox.on('change', function () {
+			if (this.checked && !window.confirm(ravanixAdminL10n.confirmDeleteOnUninstall)) {
+				this.checked = false;
+			}
+		});
+	});
+
 })(jQuery);
