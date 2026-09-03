@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ravanix\n"
 "Report-Msgid-Bugs-To: https://psykey.ir\n"
-"POT-Creation-Date: 2026-08-21 05:46:00+00:00\n"
+"POT-Creation-Date: 2026-09-03 03:30:26+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -36,7 +36,7 @@ msgstr ""
 msgid "7-point Likert"
 msgstr ""
 
-#: admin/views/settings.php:114
+#: admin/views/settings.php:177
 msgid "A \"My Results\" dashboard for the logged-in user; includes a list of completed tests and a timeline chart for each test across repeated attempts (e.g. pre/post treatment)"
 msgstr ""
 
@@ -44,7 +44,7 @@ msgstr ""
 msgid "Access and execution control"
 msgstr ""
 
-#: templates/frontend-test.php:63
+#: templates/frontend-test.php:113
 msgid "Access code"
 msgstr ""
 
@@ -52,7 +52,7 @@ msgstr ""
 msgid "Access codes to restrict participants"
 msgstr ""
 
-#: admin/views/partial-dimensions.php:117 admin/views/partial-interpretations.php:103 admin/views/partial-questions.php:195 admin/views/results-list.php:120
+#: admin/views/partial-dimensions.php:117 admin/views/partial-interpretations.php:103 admin/views/partial-questions.php:211 admin/views/results-list.php:120 admin/views/results-list.php:162
 msgid "Actions"
 msgstr ""
 
@@ -60,7 +60,7 @@ msgstr ""
 msgid "Activation"
 msgstr ""
 
-#: admin/views/settings.php:81
+#: admin/views/settings.php:79 admin/views/settings.php:90
 msgid "Active"
 msgstr ""
 
@@ -100,7 +100,7 @@ msgstr ""
 msgid "Add Option"
 msgstr ""
 
-#: admin/views/partial-questions.php:182
+#: admin/views/partial-questions.php:198
 msgid "Add Question"
 msgstr ""
 
@@ -108,7 +108,7 @@ msgstr ""
 msgid "Add Range"
 msgstr ""
 
-#: includes/class-ravanix-settings.php:24
+#: includes/class-ravanix-settings.php:41
 msgid "Age"
 msgstr ""
 
@@ -144,7 +144,7 @@ msgstr ""
 msgid "Always"
 msgstr ""
 
-#: admin/views/partial-questions.php:208
+#: admin/views/partial-questions.php:224
 msgid "Another dimension"
 msgstr ""
 
@@ -152,11 +152,11 @@ msgstr ""
 msgid "Answer type"
 msgstr ""
 
-#: ravanix.php:114
+#: ravanix.php:145
 msgid "Answered: %1$d of %2$d questions"
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:29
+#: includes/class-ravanix-ajax.php:47
 msgid "Answers are incomplete."
 msgstr ""
 
@@ -176,6 +176,10 @@ msgstr ""
 msgid "Are you sure you want to perform this action on the selected items?"
 msgstr ""
 
+#: includes/class-ravanix-admin.php:86
+msgid "Are you sure? If you delete the Ravanix plugin while this option is enabled, every questionnaire, every participant's results, and all plugin settings will be permanently deleted from the database. This cannot be undone."
+msgstr ""
+
 #: admin/views/upgrade.php:89 admin/views/upgrade.php:98
 msgid "Available"
 msgstr ""
@@ -184,8 +188,16 @@ msgstr ""
 msgid "Back to results list"
 msgstr ""
 
-#: admin/views/result-view.php:140 ravanix.php:106
+#: admin/views/result-view.php:140 ravanix.php:137
 msgid "Bar chart"
+msgstr ""
+
+#: admin/views/settings.php:120
+msgid "Brand color"
+msgstr ""
+
+#: admin/views/settings.php:117
+msgid "Branding"
 msgstr ""
 
 #: admin/views/upgrade.php:31
@@ -208,11 +220,11 @@ msgstr ""
 msgid "Bulk-import questions"
 msgstr ""
 
-#: admin/views/partial-questions.php:206
+#: admin/views/partial-questions.php:222
 msgid "By option"
 msgstr ""
 
-#: admin/views/partial-dimensions.php:91 admin/views/partial-interpretations.php:91 admin/views/partial-questions.php:184
+#: admin/views/partial-dimensions.php:91 admin/views/partial-interpretations.php:91 admin/views/partial-questions.php:200
 msgid "Cancel"
 msgstr ""
 
@@ -240,12 +252,16 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-#: ravanix.php:108
+#: ravanix.php:139
 msgid "Composite factor scores"
 msgstr ""
 
 #: admin/views/upgrade.php:41
 msgid "Composite factors"
+msgstr ""
+
+#: ravanix.php:155
+msgid "Could not save your progress; please try again."
 msgstr ""
 
 #: admin/views/upgrade.php:52
@@ -264,7 +280,11 @@ msgstr ""
 msgid "Custom options (option text and its numeric value for scoring)"
 msgstr ""
 
-#: admin/views/results-list.php:116
+#: admin/views/settings.php:140
+msgid "Danger zone"
+msgstr ""
+
+#: admin/views/results-list.php:116 admin/views/results-list.php:141
 msgid "Date"
 msgstr ""
 
@@ -276,15 +296,19 @@ msgstr ""
 msgid "Dedicated, priority support"
 msgstr ""
 
-#: admin/views/partial-dimensions.php:150 admin/views/partial-interpretations.php:114 admin/views/partial-questions.php:217 admin/views/results-list.php:103 admin/views/results-list.php:171 admin/views/tests-list.php:103 admin/views/tests-list.php:152
+#: admin/views/partial-dimensions.php:150 admin/views/partial-interpretations.php:114 admin/views/partial-questions.php:233 admin/views/results-list.php:103 admin/views/results-list.php:178 admin/views/tests-list.php:103 admin/views/tests-list.php:152
 msgid "Delete"
+msgstr ""
+
+#: admin/views/settings.php:143
+msgid "Delete data on uninstall"
 msgstr ""
 
 #: admin/views/partial-dimensions.php:150
 msgid "Delete this dimension? Related questions will not be deleted, but will be unassigned from it."
 msgstr ""
 
-#: admin/views/partial-questions.php:217
+#: admin/views/partial-questions.php:233
 msgid "Delete this question?"
 msgstr ""
 
@@ -292,7 +316,7 @@ msgstr ""
 msgid "Delete this range?"
 msgstr ""
 
-#: admin/views/results-list.php:171
+#: admin/views/results-list.php:178
 msgid "Delete this result?"
 msgstr ""
 
@@ -300,7 +324,7 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: admin/views/partial-questions.php:43 admin/views/partial-questions.php:98 admin/views/partial-questions.php:195 admin/views/result-view.php:185
+#: admin/views/partial-questions.php:43 admin/views/partial-questions.php:98 admin/views/partial-questions.php:211 admin/views/result-view.php:185
 msgid "Dimension"
 msgstr ""
 
@@ -328,7 +352,7 @@ msgstr ""
 msgid "Display a specific questionnaire, or a list of all published questionnaires as a list or a grid."
 msgstr ""
 
-#: admin/views/settings.php:106
+#: admin/views/settings.php:169
 msgid "Display a specific test for the user to take"
 msgstr ""
 
@@ -356,12 +380,20 @@ msgstr ""
 msgid "Displays a list of published questionnaires."
 msgstr ""
 
-#: ravanix.php:115
+#: admin/views/test-edit.php:249
+msgid "Do not show a consent step for this test"
+msgstr ""
+
+#: ravanix.php:146
 msgid "Download PDF"
 msgstr ""
 
 #: admin/views/test-edit.php:200 admin/views/tests-list.php:90 admin/views/tests-list.php:161
 msgid "Draft"
+msgstr ""
+
+#: admin/views/partial-questions.php:181
+msgid "e.g. 1"
 msgstr ""
 
 #: admin/views/test-edit.php:107
@@ -380,11 +412,11 @@ msgstr ""
 msgid "e.g. extraversion"
 msgstr ""
 
-#: templates/frontend-test.php:103
+#: templates/frontend-test.php:159
 msgid "e.g. Guest user"
 msgstr ""
 
-#: admin/views/partial-dimensions.php:147 admin/views/partial-interpretations.php:111 admin/views/partial-questions.php:214 admin/views/tests-list.php:144
+#: admin/views/partial-dimensions.php:147 admin/views/partial-interpretations.php:111 admin/views/partial-questions.php:230 admin/views/tests-list.php:144
 msgid "Edit"
 msgstr ""
 
@@ -404,7 +436,7 @@ msgstr ""
 msgid "Edit Question"
 msgstr ""
 
-#: admin/views/test-edit.php:248
+#: admin/views/test-edit.php:303
 msgid "Edit the linked post"
 msgstr ""
 
@@ -412,15 +444,19 @@ msgstr ""
 msgid "Editing test:"
 msgstr ""
 
-#: includes/class-ravanix-settings.php:21
+#: includes/class-ravanix-settings.php:38
 msgid "Education"
 msgstr ""
 
-#: includes/class-ravanix-settings.php:23
+#: includes/class-ravanix-settings.php:40
 msgid "Email address"
 msgstr ""
 
-#: includes/class-ravanix-admin-handlers.php:137
+#: admin/views/partial-questions.php:180
+msgid "equals"
+msgstr ""
+
+#: includes/class-ravanix-admin-handlers.php:147
 msgid "Error saving data:"
 msgstr ""
 
@@ -432,7 +468,7 @@ msgstr ""
 msgid "Export and reporting"
 msgstr ""
 
-#: admin/views/result-view.php:159 ravanix.php:117
+#: admin/views/result-view.php:159 ravanix.php:148
 msgid "Factor"
 msgstr ""
 
@@ -444,11 +480,11 @@ msgstr ""
 msgid "Featured image"
 msgstr ""
 
-#: admin/views/result-view.php:51 includes/class-ravanix-ajax.php:131 templates/frontend-test.php:119
+#: admin/views/result-view.php:51 includes/class-ravanix-ajax.php:185 templates/frontend-test.php:175
 msgid "Female"
 msgstr ""
 
-#: admin/views/settings.php:80
+#: admin/views/settings.php:78
 msgid "Field"
 msgstr ""
 
@@ -468,6 +504,10 @@ msgstr ""
 msgid "For better site SEO. If left empty, a slug is generated automatically. Only English letters, numbers, and hyphens are allowed."
 msgstr ""
 
+#: admin/views/partial-questions.php:182
+msgid "For Likert/Yes-No/custom-multiple-choice questions, enter the numeric value of the expected answer option. Leave the dropdown on \"Always shown\" for a normal question. The chosen question must come before this one in \"Display order\" above (enforced on save); if question randomization is also enabled for this test, the order participants actually see can vary, so combining the two is not recommended."
+msgstr ""
+
 #: admin/views/test-edit.php:210
 msgid "For long questionnaires (such as the NEO-PI-R with 240 questions), specify how many questions to show per page. If left empty, all questions are shown on a single page (the default behavior)."
 msgstr ""
@@ -480,11 +520,11 @@ msgstr ""
 msgid "Full JSON import/export of a test"
 msgstr ""
 
-#: includes/class-ravanix-settings.php:19
+#: includes/class-ravanix-settings.php:36
 msgid "Full name"
 msgstr ""
 
-#: includes/class-ravanix-settings.php:20
+#: includes/class-ravanix-settings.php:37
 msgid "Gender"
 msgstr ""
 
@@ -492,7 +532,7 @@ msgstr ""
 msgid "General Info"
 msgstr ""
 
-#: admin/views/result-view.php:84 admin/views/results-list.php:145 admin/views/results-list.php:149
+#: admin/views/result-view.php:84 admin/views/results-list.php:148 admin/views/results-list.php:152
 msgid "Guest"
 msgstr ""
 
@@ -504,16 +544,24 @@ msgstr ""
 msgid "I feel comfortable in groups"
 msgstr ""
 
+#: templates/frontend-test.php:105
+msgid "I have read and agree to the notice above"
+msgstr ""
+
 #: admin/views/partial-questions.php:75
 msgid "I usually feel worried *"
 msgstr ""
 
-#: admin/views/settings.php:75
+#: admin/views/settings.php:73
 msgid "If enabled, each of these fields is collected from the user along with every test form and will be visible in the \"Participant Results\" panel."
 msgstr ""
 
 #: admin/views/settings.php:35
 msgid "If enabled, every test — in addition to the shortcode (which still works) — will also be automatically viewable as a dedicated custom post type. This helps give it an independent URL, an English slug, and the ability to use tags to display \"Related questionnaires\"."
+msgstr ""
+
+#: admin/views/settings.php:153
+msgid "If this option is left unchecked (the default), deleting the plugin leaves all of its data in the database untouched, so it will be available again if the plugin is reinstalled."
 msgstr ""
 
 #: admin/views/partial-dimensions.php:74
@@ -528,8 +576,12 @@ msgstr ""
 msgid "Importance weight (default 1)"
 msgstr ""
 
-#: includes/class-ravanix-admin-handlers.php:553
+#: includes/class-ravanix-admin-handlers.php:616
 msgid "Information is incomplete."
+msgstr ""
+
+#: admin/views/settings.php:99 admin/views/test-edit.php:224
+msgid "Informed consent"
 msgstr ""
 
 #: admin/views/result-view.php:165 admin/views/result-view.php:191
@@ -552,11 +604,7 @@ msgstr ""
 msgid "Label"
 msgstr ""
 
-#: admin/views/settings.php:167
-msgid "Latest posts about Ravanix"
-msgstr ""
-
-#: admin/views/result-view.php:164 admin/views/result-view.php:190 ravanix.php:120
+#: admin/views/result-view.php:164 admin/views/result-view.php:190 ravanix.php:151
 msgid "Level"
 msgstr ""
 
@@ -568,7 +616,7 @@ msgstr ""
 msgid "Limiting the number of times a test can be run"
 msgstr ""
 
-#: admin/views/settings.php:110
+#: admin/views/settings.php:173
 msgid "List of all published tests"
 msgstr ""
 
@@ -580,7 +628,7 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: admin/views/result-view.php:51 includes/class-ravanix-ajax.php:131 templates/frontend-test.php:118
+#: admin/views/result-view.php:51 includes/class-ravanix-ajax.php:185 templates/frontend-test.php:174
 msgid "Male"
 msgstr ""
 
@@ -596,7 +644,7 @@ msgstr ""
 msgid "Minimum score of this range"
 msgstr ""
 
-#: includes/class-ravanix-settings.php:22
+#: includes/class-ravanix-settings.php:39
 msgid "Mobile number"
 msgstr ""
 
@@ -628,7 +676,7 @@ msgstr ""
 msgid "New %s"
 msgstr ""
 
-#: templates/frontend-test.php:203
+#: templates/frontend-test.php:252
 msgid "Next page"
 msgstr ""
 
@@ -660,7 +708,7 @@ msgstr ""
 msgid "No opinion"
 msgstr ""
 
-#: admin/views/partial-preview.php:58 admin/views/partial-questions.php:192
+#: admin/views/partial-preview.php:58 admin/views/partial-questions.php:208
 msgid "No question has been added yet."
 msgstr ""
 
@@ -672,7 +720,7 @@ msgstr ""
 msgid "No test has been created yet."
 msgstr ""
 
-#: includes/class-ravanix-shortcodes.php:121
+#: includes/class-ravanix-shortcodes.php:208
 msgid "No test has been published yet."
 msgstr ""
 
@@ -688,7 +736,7 @@ msgstr ""
 msgid "Not available"
 msgstr ""
 
-#: ravanix.php:112
+#: ravanix.php:143
 msgid "Note: based on the validity scales, this result may not be reliable (e.g. due to inconsistent or biased responding). Consult a professional for an accurate interpretation."
 msgstr ""
 
@@ -708,12 +756,20 @@ msgstr ""
 msgid "Number of questions:"
 msgstr ""
 
-#: templates/frontend-test.php:53
+#: templates/frontend-test.php:90
 msgid "Number of questions: %d"
 msgstr ""
 
 #: includes/class-ravanix-widget.php:96
 msgid "Number of tests to display:"
+msgstr ""
+
+#: admin/views/settings.php:133
+msgid "Off by default. This is entirely optional and has no effect on how the plugin works either way."
+msgstr ""
+
+#: includes/class-ravanix-ajax.php:138
+msgid "One of the submitted answers is not valid for its question."
 msgstr ""
 
 #: admin/views/partial-questions.php:136
@@ -724,8 +780,12 @@ msgstr ""
 msgid "Only English letters, numbers, and hyphens. Example: questionnaire"
 msgstr ""
 
-#: admin/views/test-edit.php:218
+#: admin/views/test-edit.php:258
 msgid "Only logged-in users can take this test"
+msgstr ""
+
+#: admin/views/test-edit.php:246
+msgid "Only used when \"custom\" is selected above."
 msgstr ""
 
 #: admin/views/partial-questions.php:146 includes/class-ravanix-admin.php:80
@@ -736,7 +796,7 @@ msgstr ""
 msgid "Or type a new category, e.g.: Personality tests"
 msgstr ""
 
-#: ravanix.php:105
+#: ravanix.php:136
 msgid "out of"
 msgstr ""
 
@@ -748,11 +808,11 @@ msgstr ""
 msgid "Paid"
 msgstr ""
 
-#: admin/views/results-list.php:118
+#: admin/views/results-list.php:118 admin/views/results-list.php:146
 msgid "Participant"
 msgstr ""
 
-#: admin/views/settings.php:73
+#: admin/views/settings.php:71
 msgid "Participant info fields"
 msgstr ""
 
@@ -764,31 +824,43 @@ msgstr ""
 msgid "PDF export of each participant's result"
 msgstr ""
 
-#: admin/views/result-view.php:161 admin/views/result-view.php:187 ravanix.php:119
+#: admin/views/result-view.php:161 admin/views/result-view.php:187 ravanix.php:150
 msgid "Percentage"
 msgstr ""
 
-#: admin/views/result-view.php:163 admin/views/result-view.php:189 admin/views/upgrade.php:40 ravanix.php:111
+#: admin/views/result-view.php:163 admin/views/result-view.php:189 admin/views/upgrade.php:40 ravanix.php:142
 msgid "Percentile rank"
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:84
+#: admin/views/settings.php:147
+msgid "Permanently delete all Ravanix data when this plugin is deleted"
+msgstr ""
+
+#: ravanix.php:152 templates/frontend-test.php:121
+msgid "Please agree to the consent notice above before starting."
+msgstr ""
+
+#: includes/class-ravanix-ajax.php:107
+msgid "Please agree to the consent notice before submitting."
+msgstr ""
+
+#: includes/class-ravanix-ajax.php:128
 msgid "Please answer all the questions."
 msgstr ""
 
-#: ravanix.php:98
+#: ravanix.php:129
 msgid "Please answer the questions marked in red."
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:106
+#: includes/class-ravanix-ajax.php:160
 msgid "Please fill in the required field \"%s\"."
 msgstr ""
 
-#: templates/frontend-test.php:76
+#: templates/frontend-test.php:129
 msgid "Please leave this field empty"
 msgstr ""
 
-#: admin/views/settings.php:101
+#: admin/views/settings.php:164
 msgid "Plugin shortcodes"
 msgstr ""
 
@@ -800,11 +872,15 @@ msgstr ""
 msgid "Post type slug"
 msgstr ""
 
+#: ravanix.php:147
+msgid "Powered by Ravanix"
+msgstr ""
+
 #: admin/views/test-edit.php:58
 msgid "Preview and shortcode"
 msgstr ""
 
-#: templates/frontend-test.php:201
+#: templates/frontend-test.php:250
 msgid "Previous page"
 msgstr ""
 
@@ -856,11 +932,11 @@ msgstr ""
 msgid "Question preview"
 msgstr ""
 
-#: admin/views/partial-questions.php:94 admin/views/partial-questions.php:195
+#: admin/views/partial-questions.php:94 admin/views/partial-questions.php:211
 msgid "Question text"
 msgstr ""
 
-#: admin/views/results-list.php:154
+#: admin/views/results-list.php:157
 msgid "Questionable"
 msgstr ""
 
@@ -872,7 +948,7 @@ msgstr ""
 msgid "Questionnaire"
 msgstr ""
 
-#: admin/views/test-edit.php:244
+#: admin/views/test-edit.php:299
 msgid "Questionnaire URL on this site"
 msgstr ""
 
@@ -884,7 +960,7 @@ msgstr ""
 msgid "Questions"
 msgstr ""
 
-#: admin/views/partial-questions.php:190
+#: admin/views/partial-questions.php:206
 msgid "Questions in this test"
 msgstr ""
 
@@ -896,15 +972,15 @@ msgstr ""
 msgid "Quick-assign questions (by number)"
 msgstr ""
 
-#: admin/views/result-view.php:142 ravanix.php:107
+#: admin/views/result-view.php:142 ravanix.php:138
 msgid "Radar chart"
 msgstr ""
 
-#: admin/views/test-edit.php:233
+#: admin/views/test-edit.php:273
 msgid "Randomize order"
 msgstr ""
 
-#: admin/views/test-edit.php:244
+#: admin/views/test-edit.php:284
 msgid "Randomizes only what the participant sees on screen, to reduce order effects. Scoring, norms, admin results, exports, and PDF reports always use the fixed order defined below, regardless of these settings."
 msgstr ""
 
@@ -920,6 +996,10 @@ msgstr ""
 msgid "Ravanix (your current version) is fully and freely available for building, running, and displaying psychological questionnaires. The Pro version adds specialized capabilities needed for clinical and research use — including norms, composite scores, PDF/CSV export, and access control."
 msgstr ""
 
+#: includes/class-ravanix-privacy.php:54
+msgid "Ravanix questionnaire results"
+msgstr ""
+
 #: admin/views/settings.php:24
 msgid "Ravanix Settings"
 msgstr ""
@@ -928,19 +1008,19 @@ msgstr ""
 msgid "Ravanix – Questionnaire"
 msgstr ""
 
-#: ravanix.php:116
-msgid "Ravanix — a smart psychological questionnaire tool - psykey.ir"
-msgstr ""
-
-#: admin/views/settings.php:121
-msgid "Ravanix-related products and posts (psykey.ir)"
-msgstr ""
-
 #: includes/class-ravanix-widget.php:27
 msgid "Ravanix: Tests List"
 msgstr ""
 
-#: admin/views/partial-dimensions.php:71 admin/views/result-view.php:160 admin/views/result-view.php:186 ravanix.php:118
+#: includes/class-ravanix-privacy.php:148
+msgid "Ravanix: this user's identifying information (name, contact details, and individual question answers) was removed from their questionnaire results. The resulting anonymous scores (used for the site's aggregate statistics) were kept and can no longer be traced back to this user."
+msgstr ""
+
+#: includes/class-ravanix-privacy.php:97
+msgid "Ravanix: this user's saved (but not yet submitted) test progress was deleted."
+msgstr ""
+
+#: admin/views/partial-dimensions.php:71 admin/views/result-view.php:160 admin/views/result-view.php:186 ravanix.php:149
 msgid "Raw score"
 msgstr ""
 
@@ -948,16 +1028,16 @@ msgstr ""
 msgid "Raw score, percentage, and interpretation range"
 msgstr ""
 
-#: ravanix.php:104
+#: ravanix.php:135
 msgid "Raw score:"
 msgstr ""
 
-#: admin/views/settings.php:162
-msgid "Ready-made questionnaire files (available for purchase)"
+#: templates/frontend-test.php:100
+msgid "Read the consent notice"
 msgstr ""
 
-#: admin/views/settings.php:163
-msgid "Ready-made questionnaires that can be imported directly into Ravanix, available for purchase from the psykey.ir shop."
+#: admin/views/test-edit.php:220
+msgid "Recommended for long questionnaires. Every participant's answers are always autosaved in their own browser regardless of this setting; enabling it additionally shows a visible save button, and lets a logged-in participant resume from a different device by saving their progress to their account."
 msgstr ""
 
 #: admin/views/partial-interpretations.php:48
@@ -972,11 +1052,11 @@ msgstr ""
 msgid "Remove image"
 msgstr ""
 
-#: admin/views/settings.php:82
+#: admin/views/settings.php:80 admin/views/settings.php:91
 msgid "Required"
 msgstr ""
 
-#: admin/views/test-edit.php:223
+#: admin/views/test-edit.php:263
 msgid "Result display order"
 msgstr ""
 
@@ -984,11 +1064,11 @@ msgstr ""
 msgid "Result not found."
 msgstr ""
 
-#: templates/frontend-test.php:57
+#: templates/frontend-test.php:94
 msgid "Resume where you left off"
 msgstr ""
 
-#: admin/views/partial-preview.php:62 admin/views/partial-questions.php:195 includes/class-ravanix-admin.php:84
+#: admin/views/partial-preview.php:62 admin/views/partial-questions.php:211 includes/class-ravanix-admin.php:84
 msgid "Reverse"
 msgstr ""
 
@@ -996,16 +1076,32 @@ msgstr ""
 msgid "Reverse scoring"
 msgstr ""
 
-#: admin/views/test-edit.php:254
+#: admin/views/test-edit.php:214
+msgid "Save & Resume"
+msgstr ""
+
+#: admin/views/test-edit.php:309
 msgid "Save and continue"
 msgstr ""
 
-#: admin/views/partial-dimensions.php:89 admin/views/partial-interpretations.php:89 admin/views/partial-questions.php:182 admin/views/test-edit.php:254
+#: admin/views/partial-dimensions.php:89 admin/views/partial-interpretations.php:89 admin/views/partial-questions.php:198 admin/views/test-edit.php:309
 msgid "Save Changes"
 msgstr ""
 
-#: admin/views/settings.php:69 admin/views/settings.php:96
+#: templates/frontend-test.php:244
+msgid "Save my progress"
+msgstr ""
+
+#: admin/views/settings.php:159
 msgid "Save Settings"
+msgstr ""
+
+#: ravanix.php:154
+msgid "Saved."
+msgstr ""
+
+#: ravanix.php:153
+msgid "Saving…"
 msgstr ""
 
 #: admin/views/upgrade.php:37
@@ -1052,20 +1148,36 @@ msgstr ""
 msgid "Short description"
 msgstr ""
 
-#: admin/views/test-edit.php:242
+#: admin/views/test-edit.php:218
+msgid "Show a \"Save my progress\" button on this test"
+msgstr ""
+
+#: admin/views/settings.php:131
+msgid "Show a small \"Powered by Ravanix\" link on the results page"
+msgstr ""
+
+#: admin/views/settings.php:127
+msgid "Show branding"
+msgstr ""
+
+#: admin/views/test-edit.php:282
 msgid "Show each question's answer options in random order"
 msgstr ""
 
-#: admin/views/tests-list.php:155
+#: admin/views/results-list.php:144 admin/views/settings.php:88 admin/views/tests-list.php:155
 msgid "Show more details"
 msgstr ""
 
-#: admin/views/test-edit.php:237
+#: admin/views/test-edit.php:277
 msgid "Show questions in random order"
 msgstr ""
 
-#: admin/views/test-edit.php:227
+#: admin/views/test-edit.php:267
 msgid "Show results ranked from highest to lowest"
+msgstr ""
+
+#: admin/views/partial-questions.php:170
+msgid "Show this question only if (skip logic)"
 msgstr ""
 
 #: admin/views/settings.php:56
@@ -1088,7 +1200,7 @@ msgstr ""
 msgid "Slug — optional"
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:55 ravanix.php:100
+#: includes/class-ravanix-ajax.php:73 ravanix.php:131
 msgid "Something went wrong. Please try again."
 msgstr ""
 
@@ -1096,11 +1208,11 @@ msgstr ""
 msgid "Sometimes"
 msgstr ""
 
-#: templates/frontend-test.php:58
+#: templates/frontend-test.php:95
 msgid "Start over"
 msgstr ""
 
-#: templates/frontend-test.php:64 templates/frontend-test.php:68
+#: templates/frontend-test.php:114 templates/frontend-test.php:118
 msgid "Start Test"
 msgstr ""
 
@@ -1116,15 +1228,15 @@ msgstr ""
 msgid "Strongly disagree"
 msgstr ""
 
-#: ravanix.php:101 templates/frontend-test.php:205
+#: ravanix.php:132 templates/frontend-test.php:254
 msgid "Submit answers and view my profile"
 msgstr ""
 
-#: ravanix.php:99
+#: ravanix.php:130
 msgid "Submitting your answers..."
 msgstr ""
 
-#: ravanix.php:109
+#: ravanix.php:140
 msgid "Subscale scores"
 msgstr ""
 
@@ -1132,7 +1244,7 @@ msgstr ""
 msgid "Support"
 msgstr ""
 
-#: admin/views/result-view.php:162 admin/views/result-view.php:188 ravanix.php:110
+#: admin/views/result-view.php:162 admin/views/result-view.php:188 ravanix.php:141
 msgid "T-score"
 msgstr ""
 
@@ -1144,7 +1256,7 @@ msgstr ""
 msgid "Tags"
 msgstr ""
 
-#: admin/views/results-list.php:117
+#: admin/views/results-list.php:117 admin/views/results-list.php:142
 msgid "Test"
 msgstr ""
 
@@ -1156,7 +1268,7 @@ msgstr ""
 msgid "Test instructions"
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:34
+#: includes/class-ravanix-ajax.php:52 includes/class-ravanix-ajax.php:327
 msgid "Test not found."
 msgstr ""
 
@@ -1168,7 +1280,7 @@ msgstr ""
 msgid "Test title"
 msgstr ""
 
-#: includes/class-ravanix-admin-handlers.php:97
+#: includes/class-ravanix-admin-handlers.php:102
 msgid "Test title is required."
 msgstr ""
 
@@ -1182,6 +1294,10 @@ msgstr ""
 
 #: admin/views/tests-list.php:81
 msgid "The item was deleted."
+msgstr ""
+
+#: admin/views/settings.php:123
+msgid "The main accent color used on the front-end test and results pages (buttons, progress bar, selected answers, etc). If a chosen color is too light to keep text readable on it (accessibility), it is automatically darkened just enough on the front end; your saved choice here is never changed."
 msgstr ""
 
 #: admin/views/test-edit.php:28
@@ -1200,12 +1316,12 @@ msgstr ""
 msgid "The test is still in draft mode — change its status to \"Published\" in the \"General Info\" tab"
 msgstr ""
 
-#: admin/views/settings.php:148
-msgid "There is nothing to display at the moment."
-msgstr ""
-
 #: admin/views/partial-questions.php:68
 msgid "These answer options will be the same for all questions you enter in the box below (e.g. the 4-point response scale of the Beck Anxiety Inventory). One option per line, in the format: option text|numeric value"
+msgstr ""
+
+#: admin/views/settings.php:101
+msgid "This default notice is shown, collapsed, before \"Start Test\" on every test; the participant must expand and agree to it before starting. A specific test can use its own text instead, or turn this off entirely, from that test's own settings. Leave this empty to not show a consent step by default."
 msgstr ""
 
 #: admin/views/partial-dimensions.php:79
@@ -1224,15 +1340,11 @@ msgstr ""
 msgid "This image is shown to users on the questionnaire archive page and at the top of this test's single page (if the custom post type is enabled)."
 msgstr ""
 
-#: admin/views/settings.php:140
-msgid "This list cannot be retrieved at the moment."
+#: admin/views/settings.php:150
+msgid "This option only takes effect when the plugin is removed via \"Delete\" on the Plugins screen (not when it is merely deactivated). If enabled at that time, every questionnaire, every participant's results, and all plugin settings will be permanently deleted from the database. This cannot be undone. Uploaded images (featured images) in the Media Library are never deleted by this option."
 msgstr ""
 
-#: admin/views/settings.php:123
-msgid "This section is updated automatically and periodically from psykey.ir, and has no effect on your plugin's or site's performance."
-msgstr ""
-
-#: includes/class-ravanix-shortcodes.php:149
+#: includes/class-ravanix-shortcodes.php:236
 msgid "This test has no dedicated page; this message is only shown to the site admin. Use the shortcode below to display this test, or enable \"Display as a custom post type\" in the test settings to give it a direct link:"
 msgstr ""
 
@@ -1260,7 +1372,7 @@ msgstr ""
 msgid "to"
 msgstr ""
 
-#: templates/frontend-test.php:62
+#: templates/frontend-test.php:112
 msgid "To begin, enter the access code:"
 msgstr ""
 
@@ -1280,11 +1392,7 @@ msgstr ""
 msgid "Treat each line as a new question. To mark a question as \"reverse-scored\", add a star (*) at the end of that line. All questions in this batch will be added with the same answer type and dimension; edit each one individually afterwards if needed."
 msgstr ""
 
-#: admin/views/settings.php:168
-msgid "Tutorials, guides, and news about the Ravanix plugin from the psykey.ir blog."
-msgstr ""
-
-#: admin/views/partial-questions.php:195
+#: admin/views/partial-questions.php:211
 msgid "Type"
 msgstr ""
 
@@ -1320,19 +1428,27 @@ msgstr ""
 msgid "Upgrading to Pro requires installing a separate plugin (Ravanix Pro) alongside this one; none of your data will be moved or deleted."
 msgstr ""
 
+#: admin/views/test-edit.php:233
+msgid "Use a custom consent notice for this test only:"
+msgstr ""
+
+#: admin/views/test-edit.php:229
+msgid "Use the site-wide default consent notice (set in Ravanix Settings)"
+msgstr ""
+
 #: includes/class-ravanix-admin.php:77
 msgid "Use this image"
 msgstr ""
 
-#: admin/views/test-edit.php:229
+#: admin/views/test-edit.php:269
 msgid "Useful for questionnaires where the relative ranking between dimensions matters (e.g. top strengths, career interests, dominant personality traits), rather than each dimension's absolute clinical level. When enabled, dimension and composite-factor scores are sorted by score on the result page and PDF instead of the admin-defined order."
 msgstr ""
 
-#: admin/views/test-edit.php:214
+#: admin/views/test-edit.php:254
 msgid "User login"
 msgstr ""
 
-#: admin/views/results-list.php:119
+#: admin/views/results-list.php:119 admin/views/results-list.php:155
 msgid "Validity"
 msgstr ""
 
@@ -1356,19 +1472,15 @@ msgstr ""
 msgid "View %s"
 msgstr ""
 
-#: includes/class-ravanix-shortcodes.php:146
+#: includes/class-ravanix-shortcodes.php:233
 msgid "View and take the test"
-msgstr ""
-
-#: admin/views/settings.php:140
-msgid "View directly on psykey.ir"
 msgstr ""
 
 #: admin/views/upgrade.php:113
 msgid "View pricing and buy Pro"
 msgstr ""
 
-#: admin/views/results-list.php:160
+#: admin/views/results-list.php:163
 msgid "View profile"
 msgstr ""
 
@@ -1388,7 +1500,7 @@ msgstr ""
 msgid "WordPress.org forum support"
 msgstr ""
 
-#: admin/views/partial-questions.php:212 includes/class-ravanix-shortcodes.php:167
+#: admin/views/partial-questions.php:228 includes/class-ravanix-shortcodes.php:167
 msgid "Yes"
 msgstr ""
 
@@ -1396,7 +1508,11 @@ msgstr ""
 msgid "Yes / No"
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:38
+#: includes/class-ravanix-ajax.php:321
+msgid "You must be logged in to save your progress."
+msgstr ""
+
+#: includes/class-ravanix-ajax.php:56
 msgid "You must be logged in to submit answers."
 msgstr ""
 
@@ -1408,24 +1524,32 @@ msgstr ""
 msgid "You must log in to your account before taking this test."
 msgstr ""
 
-#: includes/class-ravanix-ajax.php:47
+#: includes/class-ravanix-ajax.php:65
 msgid "You've made too many requests; please wait a bit and try again."
 msgstr ""
 
-#: templates/frontend-test.php:102
+#: templates/frontend-test.php:158
 msgid "Your name (optional)"
 msgstr ""
 
-#: templates/frontend-test.php:56
+#: templates/frontend-test.php:93
 msgid "Your previous progress on this test has been saved."
 msgstr ""
 
-#: ravanix.php:102
+#: includes/class-ravanix-ajax.php:367
+msgid "Your progress has been saved."
+msgstr ""
+
+#: ravanix.php:133
 msgid "Your psychological profile:"
 msgstr ""
 
-#: ravanix.php:103
+#: ravanix.php:134
 msgid "Your score"
+msgstr ""
+
+#: admin/views/partial-questions.php:172
+msgid "— Always shown (no condition) —"
 msgstr ""
 
 #: admin/views/partial-questions.php:108
@@ -1440,6 +1564,6 @@ msgstr ""
 msgid "— Select dimension —"
 msgstr ""
 
-#: templates/frontend-test.php:117
+#: templates/frontend-test.php:173
 msgid "— Select —"
 msgstr ""
