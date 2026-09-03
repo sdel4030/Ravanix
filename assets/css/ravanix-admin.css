@@ -57,11 +57,95 @@
 	text-align: left;
 }
 
-.rs-table {
-	/* This table's direction is inherited from its parent (.rs-wrap[dir=...]); no
-	   purpose no fixed direction is forced, so that on left-to-right sites the
-	   column layout itself (not just text alignment) also displays correctly in LTR. */
+/*
+ * Every checkbox-plus-text <label> inside a form-table cell (e.g. "Show
+ * questions in random order" / "Show each question's answer options in
+ * random order") gets consistent alignment and breathing room between
+ * stacked pairs, instead of relying on a bare <br> between them (which
+ * provides a line break but no actual vertical spacing, and can look
+ * crowded/overlapping at narrow widths where the checkbox and its
+ * potentially-wrapping label text sit close together).
+ */
+.rs-wrap .form-table td label:has(input[type="checkbox"]) {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	margin-bottom: 8px;
 }
+
+.rs-wrap .form-table td label:has(input[type="checkbox"]) input[type="checkbox"] {
+	margin-top: 3px;
+	flex-shrink: 0;
+}
+
+/*
+ * Rounded corners for text-style inputs across every Ravanix admin screen
+ * (form fields, question/dimension rows, the "assign" mini-form, etc.), so
+ * this treatment stays consistent everywhere rather than only on the one
+ * field that prompted it. Scoped to .rs-wrap only: WordPress's own native
+ * admin chrome (menus, other plugins' screens) is intentionally left as-is.
+ */
+.rs-wrap input[type="text"],
+.rs-wrap input[type="search"],
+.rs-wrap input[type="email"],
+.rs-wrap input[type="url"],
+.rs-wrap input[type="number"],
+.rs-wrap input[type="password"],
+.rs-wrap textarea,
+.rs-wrap select {
+	border-radius: 6px;
+}
+
+/*
+ * The test title is the single most prominent, most-often-edited field on
+ * this screen, so it gets noticeably more room than the technical "slug"
+ * field right below it (which is deliberately kept narrow, since slugs are
+ * short by convention).
+ */
+.rs-input-wide {
+	width: 100%;
+	max-width: 480px;
+}
+
+/* .rs-table (results-list.php, tests-list.php) intentionally has no rule of
+   its own: its direction is inherited from its ancestor .rs-wrap[dir=...],
+   so on left-to-right sites the column layout itself (not just text
+   alignment) also displays correctly in LTR, without needing a duplicate,
+   direction-specific override here. */
+
+@media (max-width: 782px) {
+	/* WordPress core's own .regular-text (25em) and .large-text (99%, but only
+	   within an already-constrained parent) do not reliably shrink to fit a
+	   narrow phone viewport on their own; the same applies to any Ravanix
+	   input/select/textarea that relies on its default/intrinsic width. This
+	   is the single broadest fix for the overflow this class of bug causes
+	   across every Ravanix admin screen, not just the ones first reported. */
+	.rs-wrap input[type="text"],
+	.rs-wrap input[type="search"],
+	.rs-wrap input[type="email"],
+	.rs-wrap input[type="url"],
+	.rs-wrap input[type="number"],
+	.rs-wrap input[type="password"],
+	.rs-wrap textarea,
+	.rs-wrap select {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	.rs-columns {
+		gap: 16px;
+	}
+
+	.rs-col-form {
+		flex-basis: 100%;
+	}
+
+	.rs-tab-content {
+		padding: 14px;
+	}
+}
+
 
 .rs-badge {
 	display: inline-block;
@@ -101,7 +185,9 @@
 }
 
 .rs-col-form {
-	flex: 0 0 360px;
+	flex: 1 1 360px;
+	min-width: 0; /* Without this, a flex item's default min-width is its content's natural width, which silently defeats flex-shrink and causes exactly the overflow this rule exists to prevent. */
+	max-width: 100%;
 	background: #f9f9f9;
 	border: 1px solid #eee;
 	border-radius: 8px;
@@ -185,6 +271,19 @@
 	flex-wrap: wrap;
 }
 
+.rs-bulk-row > p {
+	flex: 1 1 200px;
+	min-width: 0;
+	margin-block: 0 6px;
+}
+
+.rs-bulk-row select,
+.rs-bulk-row input {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
 .rs-bulk-options-paste {
 	background: #fafafa;
 	border: 1px dashed #ccc;
@@ -225,58 +324,6 @@
 	margin-bottom: 4px;
 }
 
-/* Feed columns (psykey.ir shop/blog) on the Settings page */
-.rs-feed-columns {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
-	max-width: 900px;
-	margin-top: 10px;
-}
-
-@media (max-width: 782px) {
-	.rs-feed-columns {
-		grid-template-columns: 1fr;
-	}
-}
-
-.rs-feed-column {
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 8px;
-	padding: 16px 18px;
-}
-
-.rs-feed-column h3 {
-	margin-top: 0;
-	margin-bottom: 6px;
-	font-size: 15px;
-}
-
-.rs-feed-list {
-	margin: 10px 0 0;
-	padding: 0;
-	list-style: none;
-}
-
-.rs-feed-list li {
-	padding: 8px 0;
-	border-bottom: 1px solid #f0f0f1;
-}
-
-.rs-feed-list li:last-child {
-	border-bottom: none;
-}
-
-.rs-feed-list a {
-	text-decoration: none;
-	color: #2271b1;
-}
-
-.rs-feed-list a:hover {
-	text-decoration: underline;
-}
-
 /* ---------------- Upgrade to Pro page ---------------- */
 
 .rs-upgrade-lede {
@@ -307,7 +354,7 @@
 	padding: 10px 16px;
 	font-weight: 600;
 	color: #1d2327;
-	text-align: right;
+	text-align: start; /* follows the ancestor's direction (see .rs-wrap[dir]), instead of always-right */
 }
 
 .rs-compare-table thead th.rs-compare-col {
