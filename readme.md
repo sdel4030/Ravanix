@@ -1,4 +1,4 @@
-# Ravanix Lite 1.0.7 🎉
+# Ravanix Lite 1.2.1 🎉
 
 We are pleased to announce the **first official GitHub release of Ravanix Lite** — a free WordPress plugin for creating, managing, and administering psychological questionnaires and assessments.
 
