@@ -30,11 +30,134 @@
 	font-display: swap;
 }
 
+/* =========================================================================
+   MATERIAL DESIGN 3 -- DESIGN TOKENS
+   =========================================================================
+   Scoped to Ravanix's own top-level containers (never :root), so these
+   custom properties never leak onto the surrounding theme/page -- exactly
+   the same "plugin-owned surfaces only" boundary already used for the rest
+   of this file (RTL/LTR, fonts, etc).
+
+   Color: a single admin-chosen "brand" seed (--rs-brand, set inline by PHP
+   from Ravanix Settings -> Branding; falls back to the plugin's original
+   blue if never configured) is expanded into a small set of MD3 color
+   *roles* using the browser's own color-mix() function -- no color-science
+   library, no build step, no JavaScript. This is a deliberately simpler
+   approximation of MD3's full HCT-based dynamic color algorithm, chosen so
+   a site admin can reasonably pick "our brand color" and get a sensible,
+   accessible-contrast palette, without pulling in a color-math dependency
+   for a WordPress plugin.
+
+   Shape, type, elevation, and state-layer opacity follow MD3's own scales,
+   trimmed to the subset this form-and-results UI actually uses. */
+.rs-test-container,
+.rs-my-results,
+.rs-test-list,
+.rs-cpt-archive-inner,
+.rs-cpt-single-inner {
+	--rs-brand: #4a6fa5;
+
+	/* ---- Color roles: light scheme (default) ---- */
+	--md-primary: var(--rs-brand);
+	--md-on-primary: #ffffff;
+	--md-primary-container: color-mix(in srgb, var(--rs-brand) 22%, white);
+	--md-on-primary-container: color-mix(in srgb, var(--rs-brand) 80%, black);
+	--md-secondary-container: color-mix(in srgb, var(--rs-brand) 10%, #eef0f4);
+	--md-on-secondary-container: color-mix(in srgb, var(--rs-brand) 55%, black);
+	--md-error: #b3261e;
+	--md-on-error: #ffffff;
+	--md-error-container: #f9dedc;
+	--md-on-error-container: #410e0b;
+	--md-tertiary-container: #fff3cd; /* validity/caution notices */
+	--md-on-tertiary-container: #7a5b00;
+	--md-surface: #fffbff;
+	--md-surface-container-low: #f8f8fb;
+	--md-surface-container: #f2f2f6;
+	--md-surface-container-high: #ececf0;
+	--md-on-surface: #1b1b1f;
+	--md-on-surface-variant: #46464f;
+	--md-outline: #767680;
+	--md-outline-variant: #c7c6d0;
+
+	/* ---- Shape scale ---- */
+	--md-shape-xs: 4px;
+	--md-shape-sm: 8px;
+	--md-shape-md: 12px;
+	--md-shape-lg: 16px;
+	--md-shape-xl: 28px;
+	--md-shape-full: 999px;
+
+	/* ---- Elevation ---- */
+	--md-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.10), 0 1px 3px 1px rgba(0, 0, 0, 0.08);
+	--md-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.12), 0 2px 6px 2px rgba(0, 0, 0, 0.10);
+
+	/* ---- State-layer opacities (hover/focus/press overlay, CSS-only --
+	   no ripple animation/JS; see .rs-btn/.rs-option below) ---- */
+	--md-state-hover: 0.08;
+	--md-state-focus: 0.10;
+	--md-state-press: 0.11;
+
+	/* ---- Type scale (subset relevant to a form + results UI) ---- */
+	--md-headline-size: 1.6rem;
+	--md-headline-weight: 600;
+	--md-title-size: 1.15rem;
+	--md-title-weight: 600;
+	--md-body-size: 1rem;
+	--md-body-weight: 400;
+	--md-label-size: 0.875rem;
+	--md-label-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+	.rs-test-container,
+	.rs-my-results,
+	.rs-test-list,
+	.rs-cpt-archive-inner,
+	.rs-cpt-single-inner {
+		/* MD3 lightens the primary color itself in dark schemes (rather than
+		   just placing the same primary on a dark background), which is why
+		   this isn't simply "same variables, dark surface". */
+		--md-primary: color-mix(in srgb, var(--rs-brand) 65%, white);
+		/* A fixed, near-black value rather than a color-mix blend of the brand
+		   color: dark mode's primary above is deliberately light (mixed 65%
+		   toward white), and pairing it with a medium-toned blended on-primary
+		   measured at only ~2.6:1 contrast against it in testing -- well under
+		   WCAG AA's 4.5:1 -- regardless of which brand color was used. A
+		   solid dark neutral reliably passes against any reasonably-light
+		   dark-mode primary. See Ravanix_Settings::ensure_min_contrast_with_white()
+		   for how a custom brand color's dark-mode on-primary is computed
+		   precisely (light-vs-dark chosen by actual measured contrast) when
+		   the admin sets one; this is only the static fallback for the default color. */
+		--md-on-primary: #1b1b1f;
+		--md-primary-container: color-mix(in srgb, var(--rs-brand) 45%, black);
+		--md-on-primary-container: color-mix(in srgb, var(--rs-brand) 18%, white);
+		--md-secondary-container: #34363b;
+		--md-on-secondary-container: #dadbe0;
+		--md-error: #f2b8b5;
+		--md-on-error: #601410;
+		--md-error-container: #8c1d18;
+		--md-on-error-container: #f9dedc;
+		--md-tertiary-container: #4a3b00;
+		--md-on-tertiary-container: #ffe08a;
+		--md-surface: #131316;
+		--md-surface-container-low: #1c1c1f;
+		--md-surface-container: #201f23;
+		--md-surface-container-high: #2b2a2f;
+		--md-on-surface: #e4e2e6;
+		--md-on-surface-variant: #c7c6d0;
+		--md-outline: #919097;
+		--md-outline-variant: #46464f;
+	}
+}
+
 .rs-test-container {
 	max-width: 720px;
 	margin: 0 auto;
-	color: #222;
-	line-height: 1.9;
+	color: var(--md-on-surface);
+	background: var(--md-surface);
+	line-height: 1.7;
+	font-size: var(--md-body-size);
+	font-weight: var(--md-body-weight);
 }
 
 .rs-test-container[dir="rtl"] {
@@ -53,74 +176,119 @@
 	width: 100%;
 	max-height: 320px;
 	object-fit: cover;
-	border-radius: 10px;
+	border-radius: var(--md-shape-lg);
 	margin-bottom: 16px;
 }
 
 .rs-test-title {
 	margin-bottom: 6px;
+	font-size: var(--md-headline-size);
+	font-weight: var(--md-headline-weight);
+	line-height: 1.3;
 }
 
 .rs-test-desc {
-	color: #555;
+	color: var(--md-on-surface-variant);
 }
 
 .rs-test-instructions {
-	background: #f4f7fb;
-	border-inline-start: 4px solid #4a90d9;
+	background: var(--md-secondary-container);
+	color: var(--md-on-secondary-container);
+	border-inline-start: 4px solid var(--md-primary);
 	padding: 10px 15px;
-	border-radius: 6px;
+	border-radius: var(--md-shape-sm);
 	margin: 12px 0;
 }
 
 .rs-test-meta {
-	color: #777;
+	color: var(--md-on-surface-variant);
 	font-size: 0.9em;
 }
 
+/* ---- Buttons: MD3 Filled (default), Outlined (.rs-btn-secondary), and
+   Text (.rs-btn-link) variants, reusing the exact class names already in
+   every template so no markup changes are needed anywhere. Each gets a
+   CSS-only state layer: a same-color overlay whose opacity increases on
+   hover/focus/press, which is MD3's signature interaction without requiring
+   the true expanding-circle ripple animation (a deliberate simplification
+   -- see the earlier design discussion on this). ---- */
 .rs-btn {
-	background: #4a90d9;
-	color: #fff;
+	position: relative;
+	isolation: isolate;
+	background: var(--md-primary);
+	color: var(--md-on-primary);
 	border: none;
-	padding: 10px 22px;
-	border-radius: 6px;
-	font-size: 1em;
+	padding: 10px 24px;
+	border-radius: var(--md-shape-full);
+	font-size: var(--md-label-size);
+	font-weight: var(--md-label-weight);
 	cursor: pointer;
-	transition: background 0.15s ease-in-out;
+	overflow: hidden;
+	transition: box-shadow 0.15s ease;
 }
 
-.rs-btn:hover {
-	background: #3877b8;
+.rs-btn::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: currentColor;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	pointer-events: none;
+}
+
+.rs-btn:hover::after {
+	opacity: var(--md-state-hover);
+}
+
+.rs-btn:focus-visible::after {
+	opacity: var(--md-state-focus);
+}
+
+.rs-btn:active::after {
+	opacity: var(--md-state-press);
+}
+
+.rs-btn:focus-visible {
+	outline: 2px solid var(--md-primary);
+	outline-offset: 2px;
 }
 
 .rs-btn:disabled {
-	opacity: 0.6;
+	opacity: 0.5;
 	cursor: default;
 }
 
-.rs-btn-secondary {
-	background: #eee;
-	color: #333;
+.rs-btn:disabled::after {
+	opacity: 0 !important;
 }
 
-.rs-btn-secondary:hover {
-	background: #ddd;
+.rs-btn-secondary {
+	background: transparent;
+	color: var(--md-primary);
+	border: 1px solid var(--md-outline);
+}
+
+.rs-btn-secondary::after {
+	background: var(--md-primary);
 }
 
 .rs-btn-link {
 	background: none;
 	border: none;
-	color: #4a90d9;
+	color: var(--md-primary);
 	cursor: pointer;
 	text-decoration: underline;
-	font-size: 0.95em;
+	font-size: var(--md-label-size);
+	font-weight: var(--md-label-weight);
 	padding: 4px 8px;
+	border-radius: var(--md-shape-xs);
 }
 
 .rs-resume-banner {
-	background: #f0f6ff;
-	border: 1px solid #cfe0f7;
-	border-radius: 8px;
+	background: var(--md-secondary-container);
+	color: var(--md-on-secondary-container);
+	border-radius: var(--md-shape-md);
 	padding: 14px 16px;
 	margin: 16px 0;
 }
@@ -129,27 +297,74 @@
 	margin: 0 0 10px;
 }
 
+/* Branching / skip logic: a question the current answers don't require never
+   takes up layout space, and is excluded from tab order / screen readers. */
+.rs-question-hidden {
+	display: none !important;
+}
+
+.rs-consent-block {
+	background: var(--md-surface-container-low);
+	border: 1px solid var(--md-outline-variant);
+	border-radius: var(--md-shape-md);
+	padding: 14px 16px;
+	margin: 16px 0;
+}
+
+.rs-consent-details summary {
+	cursor: pointer;
+	font-weight: var(--md-label-weight);
+	color: var(--md-primary);
+}
+
+.rs-consent-text {
+	margin-top: 10px;
+	max-height: 260px;
+	overflow-y: auto;
+	padding-inline-start: 4px;
+	line-height: 1.8;
+}
+
+.rs-consent-checkbox {
+	display: block;
+	margin-top: 12px;
+	font-weight: var(--md-label-weight);
+	cursor: pointer;
+}
+
+.rs-save-progress-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 14px 0;
+}
+
+.rs-save-progress-status {
+	font-size: 0.9em;
+	color: var(--md-on-surface-variant);
+}
+
 .rs-progress-wrap {
 	margin-bottom: 20px;
 }
 
 .rs-progress-bar-bg {
-	background: #eee;
-	border-radius: 999px;
+	background: var(--md-surface-container-high);
+	border-radius: var(--md-shape-full);
 	height: 10px;
 	overflow: hidden;
 }
 
 .rs-progress-bar-fill {
 	height: 100%;
-	background: #4a90d9;
-	border-radius: 999px;
+	background: var(--md-primary);
+	border-radius: var(--md-shape-full);
 	transition: width 0.2s ease;
 }
 
 .rs-progress-text {
 	text-align: center;
-	color: #777;
+	color: var(--md-on-surface-variant);
 	font-size: 0.85em;
 	margin: 6px 0 0;
 }
@@ -162,9 +377,9 @@
 }
 
 .rs-access-code-gate {
-	background: #f9f9f9;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
+	background: var(--md-surface-container-low);
+	border: 1px solid var(--md-outline-variant);
+	border-radius: var(--md-shape-md);
 	padding: 16px;
 	margin: 16px 0;
 	text-align: center;
@@ -173,21 +388,23 @@
 .rs-access-code-gate label {
 	display: block;
 	margin-bottom: 8px;
-	font-weight: 600;
+	font-weight: var(--md-label-weight);
 }
 
 .rs-access-code-input {
 	padding: 8px 12px;
-	border: 1px solid #ccc;
-	border-radius: 6px;
+	border: 1px solid var(--md-outline);
+	border-radius: var(--md-shape-sm);
+	background: var(--md-surface);
+	color: var(--md-on-surface);
 	margin-inline-end: 8px;
 	text-align: center;
 }
 
 .rs-question {
-	background: #fafafa;
-	border: 1px solid #e6e6e6;
-	border-radius: 8px;
+	background: var(--md-surface-container-low);
+	border: 1px solid var(--md-outline-variant);
+	border-radius: var(--md-shape-md);
 	padding: 16px 18px;
 	margin-bottom: 14px;
 	transition: border-color 0.2s ease, background 0.2s ease;
@@ -195,40 +412,104 @@
 
 .rs-question.rs-question-missing,
 .rs-field.rs-question-missing {
-	border-color: #d9534f;
-	background: #fdecea;
-	box-shadow: 0 0 0 1px #d9534f;
+	border-color: var(--md-error);
+	background: var(--md-error-container);
+	box-shadow: 0 0 0 1px var(--md-error);
+}
+
+.rs-question.rs-question-missing .rs-question-text,
+.rs-field.rs-question-missing label {
+	color: var(--md-on-error-container);
 }
 
 .rs-required-star {
-	color: #d9534f;
+	color: var(--md-error);
 }
 
 .rs-question-text {
-	font-weight: 600;
+	font-weight: var(--md-title-weight);
 	margin: 0 0 10px;
 }
 
 .rs-q-num {
-	color: #4a90d9;
+	color: var(--md-primary);
 }
 
 .rs-options {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px 18px;
+	gap: 8px 20px;
 }
 
+/* ---- MD3-style selection control: a circular outline that fills with the
+   primary color when checked, plus the same CSS-only state layer used on
+   buttons. The real <input type="radio"> is visually hidden but stays in
+   the accessibility tree and keyboard tab order (never display:none, which
+   would remove it from both) -- the custom circle is purely decorative,
+   built with ::before/::after on the label, so screen readers and keyboard
+   users interact with the real, native control exactly as before. ---- */
 .rs-option {
+	position: relative;
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	cursor: pointer;
-	font-size: 0.95em;
+	font-size: var(--md-body-size);
+	padding-inline-start: 28px;
 }
 
 .rs-option input {
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 20px;
+	height: 20px;
 	margin: 0;
+	opacity: 0; /* visually hidden, not display:none -- stays keyboard/screen-reader accessible */
+	cursor: pointer;
+}
+
+.rs-option::before {
+	content: "";
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--md-outline);
+	border-radius: var(--md-shape-full);
+	box-sizing: border-box;
+	transition: border-color 0.15s ease;
+}
+
+.rs-option::after {
+	content: "";
+	position: absolute;
+	inset-inline-start: 5px;
+	top: 50%;
+	transform: translateY(-50%) scale(0);
+	width: 10px;
+	height: 10px;
+	background: var(--md-primary);
+	border-radius: var(--md-shape-full);
+	transition: transform 0.12s ease;
+}
+
+.rs-option:has(input:checked)::before {
+	border-color: var(--md-primary);
+}
+
+.rs-option:has(input:checked)::after {
+	transform: translateY(-50%) scale(1);
+}
+
+/* State layer: a soft circular highlight behind the control on hover/focus,
+   the same MD3 interaction pattern as the buttons above. */
+.rs-option:hover::before,
+.rs-option:has(input:focus-visible)::before {
+	box-shadow: 0 0 0 8px color-mix(in srgb, var(--md-primary) calc(var(--md-state-hover) * 100%), transparent);
 }
 
 .rs-field {
@@ -237,7 +518,7 @@
 
 .rs-participant-field {
 	border: 1px solid transparent;
-	border-radius: 8px;
+	border-radius: var(--md-shape-md);
 	padding: 8px 10px;
 	transition: border-color 0.2s ease, background 0.2s ease;
 }
@@ -245,18 +526,33 @@
 .rs-field label {
 	display: block;
 	margin-bottom: 4px;
-	font-weight: 600;
+	font-weight: var(--md-label-weight);
 }
 
+/* ---- MD3 "outlined" text field: a bordered box, no fill, border brightens
+   on focus. ---- */
 .rs-field input[type="text"],
 .rs-field input[type="email"],
 .rs-field input[type="tel"],
 .rs-field input[type="number"] {
 	width: 100%;
 	max-width: 320px;
-	padding: 8px 10px;
-	border: 1px solid #ccc;
-	border-radius: 6px;
+	padding: 10px 14px;
+	border: 1px solid var(--md-outline);
+	border-radius: var(--md-shape-sm);
+	background: var(--md-surface);
+	color: var(--md-on-surface);
+	font-size: var(--md-body-size);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rs-field input[type="text"]:focus,
+.rs-field input[type="email"]:focus,
+.rs-field input[type="tel"]:focus,
+.rs-field input[type="number"]:focus {
+	outline: none;
+	border-color: var(--md-primary);
+	box-shadow: 0 0 0 1px var(--md-primary);
 }
 
 .rs-submit-row {
@@ -265,25 +561,24 @@
 }
 
 .rs-form-error {
-	color: #d9534f;
-	background: #fdecea;
-	border: 1px solid #f5c6c4;
-	border-radius: 6px;
+	color: var(--md-on-error-container);
+	background: var(--md-error-container);
+	border-radius: var(--md-shape-sm);
 	padding: 10px 14px;
 	text-align: center;
 }
 
 .rs-error {
-	color: #d9534f;
+	color: var(--md-error);
 }
 
 .rs-wc-paywall {
 	max-width: 500px;
 	margin: 30px auto;
 	text-align: center;
-	background: #fff8f0;
-	border: 1px solid #f3d9b1;
-	border-radius: 10px;
+	background: var(--md-tertiary-container);
+	color: var(--md-on-tertiary-container);
+	border-radius: var(--md-shape-lg);
 	padding: 24px;
 }
 
@@ -297,13 +592,13 @@
 	text-align: center;
 	margin-bottom: 18px;
 	padding: 14px 18px;
-	border-radius: 10px;
-	background: linear-gradient(135deg, #4a90d9, #6f42c1);
-	box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+	border-radius: var(--md-shape-lg);
+	background: var(--md-primary-container);
+	box-shadow: var(--md-elevation-1);
 }
 
 .rs-branding-banner a {
-	color: #fff;
+	color: var(--md-on-primary-container);
 	font-weight: 700;
 	font-size: 1.05em;
 	text-decoration: none;
@@ -317,6 +612,8 @@
 .rs-result-title {
 	text-align: center;
 	margin-bottom: 20px;
+	font-size: var(--md-headline-size);
+	font-weight: var(--md-headline-weight);
 }
 
 .rs-pdf-download-row {
@@ -332,20 +629,23 @@
 }
 
 .rs-chart-tab {
-	background: #f0f0f0;
-	border: 1px solid #ddd;
-	color: #444;
-	padding: 6px 16px;
-	border-radius: 999px;
+	position: relative;
+	overflow: hidden;
+	background: var(--md-surface-container);
+	border: 1px solid var(--md-outline-variant);
+	color: var(--md-on-surface-variant);
+	padding: 6px 18px;
+	border-radius: var(--md-shape-full);
 	cursor: pointer;
-	font-size: 0.9em;
-	transition: background 0.15s ease, color 0.15s ease;
+	font-size: var(--md-label-size);
+	font-weight: var(--md-label-weight);
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .rs-chart-tab.active {
-	background: #4a90d9;
-	border-color: #4a90d9;
-	color: #fff;
+	background: var(--md-primary-container);
+	border-color: transparent;
+	color: var(--md-on-primary-container);
 }
 
 .rs-chart-wrap {
@@ -362,10 +662,10 @@
 }
 
 .rs-score-card {
-	background: #fff;
-	border: 1px solid #e6e6e6;
-	border-inline-start: 6px solid #4a90d9;
-	border-radius: 8px;
+	background: var(--md-surface-container-low);
+	border: 1px solid var(--md-outline-variant);
+	border-inline-start: 6px solid var(--md-primary);
+	border-radius: var(--md-shape-md);
 	padding: 14px 18px;
 }
 
@@ -377,20 +677,21 @@
 }
 
 .rs-score-name {
-	font-weight: 700;
+	font-weight: var(--md-title-weight);
 	font-size: 1.05em;
 }
 
 .rs-score-level {
 	color: #fff;
 	font-size: 0.85em;
+	font-weight: var(--md-label-weight);
 	padding: 3px 12px;
-	border-radius: 999px;
+	border-radius: var(--md-shape-full);
 }
 
 .rs-score-bar-bg {
-	background: #eee;
-	border-radius: 999px;
+	background: var(--md-surface-container-high);
+	border-radius: var(--md-shape-full);
 	height: 8px;
 	overflow: hidden;
 	margin-bottom: 8px;
@@ -398,11 +699,11 @@
 
 .rs-score-bar-fill {
 	height: 100%;
-	border-radius: 999px;
+	border-radius: var(--md-shape-full);
 }
 
 .rs-score-percentage {
-	color: #777;
+	color: var(--md-on-surface-variant);
 	font-size: 0.85em;
 	margin: 0 0 6px;
 }
@@ -410,19 +711,18 @@
 .rs-score-tscore {
 	font-size: 0.9em;
 	margin: 0 0 8px;
-	color: #333;
+	color: var(--md-on-surface);
 }
 
 .rs-norm-group {
-	color: #888;
+	color: var(--md-on-surface-variant);
 	font-size: 0.9em;
 }
 
 .rs-validity-warning {
-	background: #fff3cd;
-	border: 1px solid #ffe08a;
-	color: #7a5b00;
-	border-radius: 8px;
+	background: var(--md-tertiary-container);
+	border-radius: var(--md-shape-md);
+	color: var(--md-on-tertiary-container);
 	padding: 12px 16px;
 	margin-bottom: 20px;
 	font-size: 0.95em;
@@ -432,13 +732,15 @@
 .rs-facet-title {
 	text-align: center;
 	margin: 10px 0 16px;
-	color: #444;
+	color: var(--md-on-surface-variant);
+	font-size: var(--md-title-size);
+	font-weight: var(--md-title-weight);
 }
 
 .rs-composite-cards {
 	margin-bottom: 30px;
 	padding-bottom: 20px;
-	border-bottom: 2px dashed #ddd;
+	border-bottom: 1px dashed var(--md-outline-variant);
 }
 
 .rs-composite-table {
@@ -452,17 +754,17 @@
 .rs-composite-table td {
 	padding: 10px 12px;
 	text-align: start;
-	border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid var(--md-outline-variant);
 }
 
 .rs-composite-table thead th {
-	background: #f7f7f7;
-	font-weight: 600;
-	color: #444;
+	background: var(--md-surface-container);
+	font-weight: var(--md-label-weight);
+	color: var(--md-on-surface-variant);
 }
 
 .rs-composite-table tbody tr:hover {
-	background: #fafafa;
+	background: var(--md-surface-container-low);
 }
 
 .rs-composite-table .rs-score-level {
@@ -471,7 +773,7 @@
 
 .rs-score-desc {
 	margin: 0;
-	color: #333;
+	color: var(--md-on-surface);
 }
 
 /* Tests list */
@@ -506,15 +808,22 @@
 }
 
 .rs-test-card {
-	border: 1px solid #e6e6e6;
-	border-radius: 8px;
+	background: var(--md-surface-container-low);
+	color: var(--md-on-surface);
+	border: 1px solid var(--md-outline-variant);
+	border-radius: var(--md-shape-md);
 	padding: 16px;
+	transition: box-shadow 0.15s ease;
+}
+
+.rs-test-card:hover {
+	box-shadow: var(--md-elevation-1);
 }
 
 .rs-test-card-image {
 	margin: -16px -16px 12px -16px;
 	overflow: hidden;
-	border-radius: 8px 8px 0 0;
+	border-radius: var(--md-shape-md) var(--md-shape-md) 0 0;
 }
 
 .rs-test-card-image img {
@@ -539,13 +848,14 @@
 
 .rs-shortcode-hint {
 	font-size: 0.85em;
-	color: #777;
+	color: var(--md-on-surface-variant);
 }
 
 /* My Results dashboard */
 .rs-my-results {
 	max-width: 900px;
 	margin: 0 auto;
+	color: var(--md-on-surface);
 }
 
 .rs-my-results[dir="rtl"] {
@@ -574,7 +884,7 @@
 
 .rs-my-results-table th,
 .rs-my-results-table td {
-	border: 1px solid #e6e6e6;
+	border: 1px solid var(--md-outline-variant);
 	padding: 10px 12px;
 	text-align: start; /* follows the ancestor's direction, instead of always-right */
 	vertical-align: middle;
@@ -582,7 +892,7 @@
 }
 
 .rs-my-results-table th {
-	background: #f7f7f7;
+	background: var(--md-surface-container);
 }
 
 /* The first column (date/attempt) stays visible while the rest of a wide
@@ -593,13 +903,13 @@
 .rs-my-results-table td:first-child {
 	position: sticky;
 	inset-inline-start: 0;
-	background: #fff;
+	background: var(--md-surface);
 	white-space: nowrap;
-	box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.08);
+	box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.12);
 }
 
 .rs-my-results-table thead th:first-child {
-	background: #f7f7f7;
+	background: var(--md-surface-container);
 	z-index: 1;
 }
 
@@ -611,7 +921,7 @@
 }
 
 .rs-my-test-detail .description {
-	color: #888;
+	color: var(--md-on-surface-variant);
 	font-size: 0.8em;
 	margin-top: 3px;
 }
@@ -621,6 +931,7 @@
 	max-width: 1000px;
 	margin: 30px auto;
 	padding: 0 20px;
+	color: var(--md-on-surface);
 	font-family: 'Vazirmatn', Tahoma, sans-serif;
 }
 
@@ -630,6 +941,8 @@
 
 .rs-cpt-archive-title {
 	margin-bottom: 25px;
+	font-size: var(--md-headline-size);
+	font-weight: var(--md-headline-weight);
 }
 
 .rs-cpt-archive-grid {
@@ -640,17 +953,17 @@
 
 .rs-cpt-archive-card {
 	display: block;
-	border: 1px solid #e6e6e6;
-	border-radius: 10px;
+	border: 1px solid var(--md-outline-variant);
+	border-radius: var(--md-shape-lg);
 	overflow: hidden;
 	text-decoration: none;
 	color: inherit;
-	background: #fff;
+	background: var(--md-surface-container-low);
 	transition: box-shadow 0.15s ease;
 }
 
 .rs-cpt-archive-card:hover {
-	box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+	box-shadow: var(--md-elevation-2);
 }
 
 .rs-cpt-archive-thumb img {
@@ -667,10 +980,11 @@
 .rs-cpt-archive-card-title {
 	margin: 0 0 8px;
 	font-size: 1.1em;
+	font-weight: var(--md-title-weight);
 }
 
 .rs-cpt-archive-excerpt {
-	color: #555;
+	color: var(--md-on-surface-variant);
 	font-size: 0.92em;
 	margin: 0;
 }
@@ -685,6 +999,7 @@
 	max-width: 760px;
 	margin: 30px auto;
 	padding: 0 20px;
+	color: var(--md-on-surface);
 	font-family: 'Vazirmatn', Tahoma, sans-serif;
 }
 
@@ -696,16 +1011,18 @@
 	width: 100%;
 	max-height: 360px;
 	object-fit: cover;
-	border-radius: 10px;
+	border-radius: var(--md-shape-lg);
 	margin-bottom: 20px;
 }
 
 .rs-cpt-single-title {
 	margin-bottom: 10px;
+	font-size: var(--md-headline-size);
+	font-weight: var(--md-headline-weight);
 }
 
 .rs-cpt-single-excerpt {
-	color: #555;
+	color: var(--md-on-surface-variant);
 	font-size: 1.05em;
 	margin-bottom: 25px;
 }
@@ -720,17 +1037,17 @@
 .rs-taxonomy-badge {
 	display: inline-block;
 	padding: 4px 12px;
-	border-radius: 999px;
+	border-radius: var(--md-shape-full);
 	font-size: 0.85em;
 	text-decoration: none;
 }
 
 .rs-cat-badge {
-	background: #e8eef8;
-	color: #2c5fa8;
+	background: var(--md-primary-container);
+	color: var(--md-on-primary-container);
 }
 
 .rs-tag-badge {
-	background: #f0f0f0;
-	color: #666;
+	background: var(--md-surface-container-high);
+	color: var(--md-on-surface-variant);
 }
