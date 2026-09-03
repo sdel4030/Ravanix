@@ -1,0 +1,82 @@
+Ravanix — full changelog
+=========================
+
+The most recent versions are kept in readme.txt (Changelog section);
+this file holds the complete history.
+
+= 1.2.1 =
+* Fixed: an admin-chosen brand color that was too light could make white button text (and the color's own use as question-number/link text) fail WCAG AA contrast; a real WCAG relative-luminance check now automatically darkens a color only as much as actually needed, computed fresh on every page load -- the saved setting itself is never changed
+* Fixed: in dark mode, the default color scheme's button text measured only ~2.6:1 contrast against its own (deliberately lightened) button background, well under the 4.5:1 minimum; both the default and any custom brand color now get a dark-mode text color chosen by actually measuring contrast rather than a fixed color blend
+
+= 1.2.0 =
+* New: the front-end test-taking and results pages (and Ravanix Pro's My Results dashboard, which shares this stylesheet) now use a Material Design 3-inspired visual system -- MD3 color roles, shape scale, simplified type scale, and CSS-only state layers on buttons/answer selections
+* New: a "Brand color" setting (Ravanix Settings -> Branding) lets the admin pick one accent color; every other color in the front-end palette is derived from it automatically via the browser's own color-mix() function, no extra library or build step
+* New: automatic light/dark appearance, following the visitor's OS/browser preference (prefers-color-scheme)
+* This is a CSS-only redesign: no HTML/JS structure changed, so no database migration and no impact on existing shortcodes, custom post type pages, or stored results
+
+= 1.1.5 =
+* Fixed (HIGH): the server accepted any numeric value for a submitted answer without checking it was actually one of that question's real choices for every question type (Likert-5/7, Yes/No, custom multiple-choice, and Pro's forced-choice questions), so a tampered request could submit e.g. "999" for a 5-point Likert item and corrupt that dimension's raw score/percentage
+* Fixed: a "Powered by Ravanix" link was always shown on every result page with no way to turn it off (a WordPress.org Guideline 10 violation); it is now off by default, with an opt-in "Show branding" toggle in Ravanix Settings
+* Fixed: a question's "show only if" (skip logic) source question can no longer be set to one that comes later in display order, which could never actually be satisfied; this is now enforced when saving a question
+* Fixed: readme.txt incorrectly described text direction (RTL/LTR) as a per-test setting; it actually follows the site's language (WordPress's own is_rtl()) site-wide, not per test
+* Improved: restoring a saved draft no longer builds a jQuery selector directly from the saved value, so an unusual/tampered browser-local draft can no longer break the whole restore -- values are now compared via JS equality instead
+* Improved: reworded an internal code comment away from the word "tracking" to more accurately describe its actual, narrow purpose (guest-session identification and anti-abuse controls)
+* Added: a Privacy section in readme.txt, documenting exactly what's stored for a guest or logged-in participant and why
+
+= 1.1.4 =
+* Fixed: resuming a saved draft (Save & Resume) could skip the informed-consent step entirely, since the "Resume where you left off" button never checked whether consent had been agreed to
+* Fixed: comparing a server-saved draft against the browser's local one used the wrong timezone (a site-local timestamp was read back as if it were already UTC), which could make a genuinely older draft look newer than it was, or vice versa
+* Fixed: deleting a question that another question's "show only if" (skip logic) condition depended on left that other question permanently, silently hidden with no way to ever satisfy its condition again; the reference is now cleared automatically when the depended-on question is deleted
+* Fixed: an already-defined but never-actually-used debounced autosave function is now correctly wired up to the per-answer autosave, avoiding redundant localStorage writes on rapid successive clicks
+
+= 1.1.3 =
+* Fixed: several responsive/mobile layout bugs in the admin panel — a fixed-width form column that didn't shrink to fit narrow screens (Dimensions, Interpretation Ranges, and the question edit form all share this layout), the bulk-import row's dropdowns/inputs overflowing the viewport, WordPress core's own fixed-width .regular-text/.large-text classes not fitting phone-width screens, and two custom admin tables missing the data-colname/toggle-row markup WordPress's own responsive table CSS needs (Participant info fields, and Participant Results, which had the same bug though it wasn't reported)
+* Improved: consistent spacing/alignment for checkbox-plus-label pairs across every admin form (e.g. the "Randomize order" checkboxes)
+* Improved: the built-in sample questionnaire ("Sample: Mood Screening Scale") now demonstrates every feature in this version of the plugin — branching/skip logic, a custom per-test informed-consent notice, Save & Resume, all four question types (Likert-5, Likert-7, Yes/No, custom multiple-choice), importance weighting, pagination, ranked results, and randomized answer-option order — instead of only the original two Likert-5 dimensions
+
+= 1.1.2 =
+* Improved: readme.txt rewritten to current WP.org guidelines — Tags trimmed to the current limit of 5 relevant, non-generic terms (RTL dropped as redundant), and version history split into changelog.txt to keep this file under the recommended size
+* Fixed: Ravanix Pro's Plugin URI no longer duplicates this plugin's own, per official guidance against reusing a URI across a free/paid pair
+
+= 1.1.1 =
+* Fixed: Plugin Check warnings introduced by 1.1.0's Save & Resume feature — a misplaced phpcs suppression comment on the wrong line in the draft lookup query, missing sniff codes for the new $wpdb->delete()/->replace() calls, and an unsanitized read of the consent_agreed field
+* Fixed: a stale, incorrect header comment in class-ravanix-ajax.php that described a nonce-checking pattern from a different file, not this one
+
+= 1.1.0 =
+* New: informed consent — a site-wide default notice (Ravanix Settings) with a per-test override or opt-out, shown collapsed before "Start Test" and enforced both client- and server-side
+* New: Save & Resume — every participant's answers are always autosaved in their browser; the admin can additionally enable a visible "Save my progress" button per test, which also lets a logged-in participant resume on a different device
+* New: branching / skip logic — a question can be set to only appear if a specific earlier question was answered a specific way
+* Fixed: with skip logic, a question hidden by its branch condition is no longer submitted or included in that question's dimension's score, consistent with how the scoring engine already treats any other unanswered question
+
+= 1.0.14 =
+* Fixed: Plugin Check warnings on uninstall.php — the phpcs suppression comments were targeting the wrong sniff codes (WordPress.DB.PreparedSQL.NotPrepared instead of the actually-firing WordPress.DB.PreparedSQL.InterpolatedNotPrepared and WordPress.DB.DirectDatabaseQuery.SchemaChange) and two loop variables lacked the plugin's prefix
+* Fixed: the same missing InterpolatedNotPrepared suppression on the CREATE TABLE statements in the activator (audited the entire codebase; no other occurrences found)
+
+= 1.0.13 =
+* Fixed: on left-to-right sites, the "Feature" column header on the Upgrade page's comparison table was right-aligned instead of left-aligned (audited every other table for the same issue; none found)
+* Improved: the test title field on the "Add/Edit Test" screen is now noticeably wider than the slug field below it
+* Improved: rounded corners applied consistently to text inputs, textareas, and dropdowns across every Ravanix admin screen
+
+= 1.0.12 =
+* New: an opt-in "Delete data on uninstall" setting (Settings -> Danger zone, off by default). Only when enabled does removing the plugin permanently delete its questionnaires, results, and settings; otherwise everything is left in place for a future reinstall
+* New: integrates with WordPress's own Tools -> Erase Personal Data screen, so a request for a specific logged-in user anonymizes their identifying details while keeping their anonymous dimension scores for aggregate statistics
+* Fixed: Plugin URI now points to the plugin's own page instead of the Pro add-on's page
+
+= 1.0.11 =
+* Removed the RSS feed calls to psykey.ir on the Settings page (no external requests remain)
+* Fixed a missing/doubled separator between the "View profile", "PDF" (Pro), and "Delete" row actions on the "Participant Results" screen
+* Tested up to WordPress 7.1
+
+= 1.0.2 =
+* New: an optional "Show results ranked from highest to lowest" setting per test, for questionnaires where relative ranking between dimensions matters more than each one's absolute level (e.g. strengths, interests, dominant traits)
+* New: dimensions without an interpretation range now show their own general description instead of a blank "not defined" message
+* New: test display direction (RTL/LTR) is now detected automatically from the site's language, removing a manual per-test setting
+* New: the "All Tests" admin screen now follows WordPress's native list-table conventions (status filter, hover row actions, mobile-responsive layout)
+
+= 1.0.1 =
+* Full English translation of the admin interface and all plugin strings; the source .pot file was regenerated accordingly
+* Fixed a bug where a participant's gender was matched against a translated display label instead of a stable internal value, which could silently break gender-based norm matching on non-default languages
+* Various WordPress coding-standards and documentation clean-ups
+
+= 1.0.0 =
+* Initial public release of Ravanix
