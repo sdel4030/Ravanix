@@ -55,6 +55,19 @@
 .rs-test-list,
 .rs-cpt-archive-inner,
 .rs-cpt-single-inner {
+	/* Tells the browser this page explicitly handles both light and dark
+	   appearance itself (see the @media block below), so it should not layer
+	   its own automatic color-inversion heuristic on top -- some mobile
+	   browsers do this by default for pages that never declare a
+	   color-scheme, and the two can conflict (the browser's own guesswork
+	   inverting some colors while this file's actual dark-mode CSS also
+	   applies), producing inconsistent, sometimes unreadable combinations
+	   that only show up in a real dark-mode/forced-dark-mode browser --
+	   never in ordinary light mode, and never in a straightforward
+	   emulated/DevTools dark-mode check either, which is why this class of
+	   bug is easy to miss without testing on an actual device. */
+	color-scheme: light dark;
+
 	--rs-brand: #4a6fa5;
 
 	/* ---- Color roles: light scheme (default) ---- */
@@ -201,8 +214,50 @@
 }
 
 .rs-test-meta {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin: 14px 0;
+	background: var(--md-surface-container-low);
+	border: 1px solid var(--md-outline-variant);
+	border-radius: var(--md-shape-md);
+	overflow: hidden;
+	table-layout: fixed;
+}
+
+.rs-test-meta td {
+	text-align: center;
+	padding: 14px 8px;
+	border-inline-start: 1px solid var(--md-outline-variant);
+	vertical-align: middle;
+}
+
+.rs-test-meta td:first-child {
+	border-inline-start: none;
+}
+
+.rs-test-meta-icon {
+	display: block;
+	color: var(--md-primary);
+	margin-bottom: 4px;
+}
+
+.rs-test-meta-icon svg {
+	width: 22px;
+	height: 22px;
+}
+
+.rs-test-meta-value {
+	display: block;
+	font-size: 1.1rem;
+	font-weight: var(--md-title-weight);
+	color: var(--md-on-surface);
+}
+
+.rs-test-meta-label {
+	display: block;
+	font-size: 0.78rem;
 	color: var(--md-on-surface-variant);
-	font-size: 0.9em;
 }
 
 /* ---- Buttons: MD3 Filled (default), Outlined (.rs-btn-secondary), and
@@ -261,6 +316,28 @@
 
 .rs-btn:disabled::after {
 	opacity: 0 !important;
+}
+
+/* The single most important action on the page (also shared by "Resume where
+   you left off", since that is equally the entry point into the test) gets
+   deliberately larger, more prominent sizing and a squarer corner than the
+   pill-shaped default -- a distinct "hero" treatment rather than looking like
+   just another button in the row. */
+.rs-btn-start {
+	padding: 20px 40px;
+	border-radius: 10px;
+	font-size: 1.25rem;
+	font-weight: 700;
+}
+
+/* Submitting the completed test is nearly as significant a moment as
+   starting it, so it gets a matching (slightly smaller) version of the same
+   treatment, rather than looking like an ordinary secondary action. */
+.rs-btn-submit {
+	padding: 16px 32px;
+	border-radius: 10px;
+	font-size: 1.1rem;
+	font-weight: 700;
 }
 
 .rs-btn-secondary {
@@ -755,6 +832,7 @@
 	padding: 10px 12px;
 	text-align: start;
 	border-bottom: 1px solid var(--md-outline-variant);
+	color: var(--md-on-surface);
 }
 
 .rs-composite-table thead th {
@@ -846,6 +924,57 @@
 	text-decoration: underline;
 }
 
+/* "Titles only" layout: just each title, marked with the Ravanix glyph
+   (Ravanix_Shortcodes::get_titles_layout_icon()) instead of a bullet. */
+.rs-test-list-titles {
+	display: block;
+}
+
+.rs-test-titles {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.rs-test-titles li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.rs-test-titles-icon {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	color: var(--md-primary);
+}
+
+.rs-test-titles-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.rs-test-titles a,
+.rs-test-titles span {
+	color: var(--md-on-surface);
+	text-decoration: none;
+	font-size: 1rem;
+}
+
+.rs-test-titles a:hover {
+	text-decoration: underline;
+}
+
+.rs-test-titles a:focus-visible {
+	outline: 2px solid var(--md-primary);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
 .rs-shortcode-hint {
 	font-size: 0.85em;
 	color: var(--md-on-surface-variant);
@@ -856,6 +985,7 @@
 	max-width: 900px;
 	margin: 0 auto;
 	color: var(--md-on-surface);
+	background: var(--md-surface);
 }
 
 .rs-my-results[dir="rtl"] {
@@ -889,10 +1019,12 @@
 	text-align: start; /* follows the ancestor's direction, instead of always-right */
 	vertical-align: middle;
 	white-space: nowrap;
+	color: var(--md-on-surface);
 }
 
 .rs-my-results-table th {
 	background: var(--md-surface-container);
+	color: var(--md-on-surface-variant);
 }
 
 /* The first column (date/attempt) stays visible while the rest of a wide
@@ -932,6 +1064,7 @@
 	margin: 30px auto;
 	padding: 0 20px;
 	color: var(--md-on-surface);
+	background: var(--md-surface);
 	font-family: 'Vazirmatn', Tahoma, sans-serif;
 }
 
@@ -1000,6 +1133,7 @@
 	margin: 30px auto;
 	padding: 0 20px;
 	color: var(--md-on-surface);
+	background: var(--md-surface);
 	font-family: 'Vazirmatn', Tahoma, sans-serif;
 }
 

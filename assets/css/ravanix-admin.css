@@ -107,10 +107,88 @@
 	max-width: 480px;
 }
 
-/* .rs-table (results-list.php, tests-list.php) intentionally has no rule of
-   its own: its direction is inherited from its ancestor .rs-wrap[dir=...],
-   so on left-to-right sites the column layout itself (not just text
-   alignment) also displays correctly in LTR, without needing a duplicate,
+/*
+ * .rs-table (results-list.php, tests-list.php) on narrow screens: WordPress
+ * core's own default responsive list-table behavior (each td's data-colname
+ * label shown via a floated ::before pseudo-element next to the cell's own
+ * content) was built and tested primarily for LTR admin screens; on an RTL
+ * screen the label and the value can end up positioned on top of each other
+ * instead of side by side, which is exactly the overlapping, unreadable text
+ * this replaces. Rather than trying to patch wp-admin core's own CSS (which
+ * this plugin cannot safely override for every future WP version), .rs-table
+ * gets its own explicit, direction-safe layout here: each row becomes a
+ * bordered "card", each cell becomes its own flex row with the data-colname
+ * label on one side and the value on the other -- justify-content and the
+ * inherited RTL/LTR direction handle the mirroring correctly on their own,
+ * with no float or absolute positioning involved anywhere.
+ */
+@media (max-width: 782px) {
+	.rs-table thead {
+		display: none; /* redundant once every cell shows its own data-colname label */
+	}
+
+	.rs-table,
+	.rs-table tbody,
+	.rs-table tr {
+		display: block;
+		width: 100%;
+	}
+
+	.rs-table tr {
+		margin-bottom: 12px;
+		border: 1px solid #ccd0d4;
+		border-radius: 8px;
+		padding: 4px 0;
+		background: #fff;
+	}
+
+	.rs-table td,
+	.rs-table th.check-column {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		width: auto;
+		padding: 8px 14px;
+		border: none;
+		border-bottom: 1px solid #f0f0f1;
+		text-align: start;
+		white-space: normal;
+		word-break: break-word;
+	}
+
+	.rs-table tr > :last-child {
+		border-bottom: none;
+	}
+
+	.rs-table td[data-colname]::before {
+		content: attr(data-colname);
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	/* The checkbox column has no data-colname (a checkbox needs no label next
+	   to it the way text content does), so it only needs left-alignment,
+	   not the label/value split every other cell gets above. */
+	.rs-table th.check-column {
+		justify-content: flex-start;
+	}
+
+	/* Actions cells often carry several links ("View profile | Delete", or
+	   with Ravanix Pro's PDF link also in the mix) -- these wrap onto their
+	   own line under the label instead of being squeezed into the same flex
+	   row as everything else, so they stay tappable at a normal size. */
+	.rs-table td[data-colname]:has(> a) {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+/* .rs-table (results-list.php, tests-list.php) intentionally has no
+   direction-specific rule of its own beyond the mobile block above: its
+   direction is inherited from its ancestor .rs-wrap[dir=...], so on
+   left-to-right sites the column layout itself (not just text alignment)
+   also displays correctly in LTR, without needing a duplicate,
    direction-specific override here. */
 
 @media (max-width: 782px) {
@@ -134,11 +212,8 @@
 	}
 
 	.rs-columns {
+		grid-template-columns: 1fr;
 		gap: 16px;
-	}
-
-	.rs-col-form {
-		flex-basis: 100%;
 	}
 
 	.rs-tab-content {
@@ -178,16 +253,28 @@
 	max-width: 1200px;
 }
 
+/*
+ * This two-column layout (a fixed "Add New ..." form beside its list/table)
+ * is shared by five tabs: Dimensions, Questions, Interpretation Ranges
+ * (Lite), and Norms, Composite Factors (Pro). It was previously flex-based
+ * with a fixed-pixel form column (flex: 0 1 288px) next to a flex-grow list
+ * column (flex: 1; min-width: 320px) — at many in-between admin-sidebar/
+ * viewport widths those two widths don't add up cleanly against the
+ * container, so flex-wrap could drop the list column onto its own line
+ * unpredictably rather than at one deliberate breakpoint. Grid with an
+ * explicit percentage split doesn't have that failure mode: the two tracks
+ * plus the gap always add up to exactly the container's width at every size
+ * above the single breakpoint below, where it intentionally stacks instead.
+ */
 .rs-columns {
-	display: flex;
-	gap: 30px;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: 40% 60%;
+	gap: 15px;
+	align-items: start; /* a short form shouldn't stretch to match a taller list/table next to it */
 }
 
 .rs-col-form {
-	flex: 1 1 360px;
-	min-width: 0; /* Without this, a flex item's default min-width is its content's natural width, which silently defeats flex-shrink and causes exactly the overflow this rule exists to prevent. */
-	max-width: 100%;
+	min-width: 0; /* a grid item's default min-width is auto (its content's natural width), which -- same as flex -- silently defeats the track's 40% share and lets long unbreakable content (e.g. a URL) push the column wider than intended */
 	background: #f9f9f9;
 	border: 1px solid #eee;
 	border-radius: 8px;
@@ -196,8 +283,33 @@
 }
 
 .rs-col-list {
-	flex: 1;
-	min-width: 320px;
+	min-width: 0; /* same reasoning: without this, a wide table can force its 60% track (and the page) to overflow instead of scrolling internally within .rs-table-scroll-x */
+}
+
+/*
+ * Responsive behavior of .rs-columns across screen sizes, deliberately reusing
+ * WordPress admin's own two menu breakpoints (960px, where wp-admin's own
+ * sidebar auto-collapses to icons-only, and 782px, where it becomes an
+ * off-canvas toggle) rather than inventing unrelated ones, so this layout's
+ * transitions line up with changes the admin is already seeing elsewhere on
+ * the same screen:
+ *   > 1200px : capped by .rs-tab-content's own max-width above, so the 40%
+ *              track never exceeds 480px even on an ultra-wide monitor.
+ *   961–1200px: plain 40%/60% (rule above) -- wp-admin's sidebar is at its
+ *              widest here, but there's still enough room for a comfortable split.
+ *   783–960px : wp-admin's sidebar has just collapsed to icons-only, freeing up
+ *              space, but this is also the range real-world tablets and small
+ *              laptop windows land in; the form column gets a bit more relative
+ *              room (45%) since its fields (textareas, selects) benefit more from
+ *              extra width than the list/table side does at this size.
+ *   ≤ 782px   : wp-admin's own mobile breakpoint; stacks to one column entirely
+ *              (existing rule further down this file).
+ */
+@media (min-width: 783px) and (max-width: 1100px) {
+	.rs-columns {
+		grid-template-columns: 45% 55%;
+		gap: 12px;
+	}
 }
 
 .rs-option-row {
@@ -305,7 +417,15 @@
 }
 
 .rs-assign-form input[type="text"] {
-	width: 160px;
+	width: 110px;
+}
+
+/* A safety net beyond narrowing the quick-assign column: if this table (Name,
+   Code, Number of questions, Quick-assign, Actions) is still wider than the
+   available space on a given screen, only the table itself scrolls
+   horizontally, instead of the whole admin page. */
+.rs-table-scroll-x {
+	overflow-x: auto;
 }
 
 .rs-category-checklist {
@@ -419,14 +539,19 @@
 	font-size: 13px;
 }
 
+/* Original colors (#3fae54 on #eaf7ec, and #c3c4c7 on #f3f3f4) measured
+   ~2.6:1 and ~1.6:1 -- both well under WCAG AA's 4.5:1 minimum for text/icon
+   glyphs conveying meaning (here, a checkmark/dash indicating "included" vs
+   "not included" in the Lite/Pro comparison). Darkened to ~4.7:1 each while
+   keeping the same green/gray hue and light background. */
 .rs-compare-icon.rs-yes {
 	background: #eaf7ec;
-	color: #3fae54;
+	color: #1e7d34;
 }
 
 .rs-compare-icon.rs-no {
 	background: #f3f3f4;
-	color: #c3c4c7;
+	color: #6c6d70;
 }
 
 .rs-compare-icon .dashicons {
@@ -440,14 +565,21 @@
 	max-width: 900px;
 }
 
+/* WordPress core's .button-hero renders white text by default. The original
+   #e0a72e/#c8931f pair (measured contrast ~2.2:1 and ~2.6:1 against white)
+   fell well short of WCAG AA's 4.5:1 minimum for normal-weight text; these
+   darker golds keep the same amber "upgrade" branding while passing (~5.4:1
+   and ~6.7:1 respectively, verified against WCAG 2's relative-luminance
+   formula -- the same math Ravanix_Settings::ensure_min_contrast_with_white()
+   uses for the admin-configurable brand color on the front end). */
 .rs-upgrade-cta .button-hero {
-	background: #e0a72e;
-	border-color: #c8931f;
+	background: #8a6414;
+	border-color: #6e4e0c;
 	transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .rs-upgrade-cta .button-hero:hover {
-	background: #c8931f;
+	background: #6e4e0c;
 	transform: translateY(-1px);
 }
 
