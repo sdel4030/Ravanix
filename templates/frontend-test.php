@@ -23,6 +23,15 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 $per_page         = ! empty( $test->questions_per_page ) ? intval( $test->questions_per_page ) : 0; // 0 means no pagination
 $total_questions  = count( $test->questions );
 $total_pages      = $per_page > 0 ? max( 1, (int) ceil( $total_questions / $per_page ) ) : 1;
+
+// A simple, transparent estimate (about 8 seconds per item, which is
+// reasonable for single-click Likert/Yes-No/multiple-choice questions) rather
+// than anything more elaborate -- this is explicitly a rough guide for the
+// participant, not a measured or guaranteed figure.
+$estimated_minutes = max( 1, (int) round( ( $total_questions * 8 ) / 60 ) );
+
+global $wpdb;
+$participant_count = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . Ravanix_DB::results() . ' WHERE test_id = %d', $test->id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name from Ravanix_DB::results(), a fixed string, never user input.
 $is_paginated     = $total_pages > 1;
 
 // Informed consent: see Ravanix_Settings::get_effective_consent_text() for the
@@ -85,10 +94,36 @@ if ( $enable_save_resume && is_user_logged_in() ) {
 		<?php if ( ! empty( $test->instructions ) ) : ?>
 			<div class="rs-test-instructions"><?php echo wp_kses_post( wpautop( esc_html( $test->instructions ) ) ); ?></div>
 		<?php endif; ?>
-		<p class="rs-test-meta"><?php
-			/* translators: %d: total number of questions in this test. */
-			printf( esc_html__( 'Number of questions: %d', 'ravanix' ), absint( $total_questions ) );
-		?></p>
+		<table class="rs-test-meta">
+			<tr>
+				<td>
+					<span class="rs-test-meta-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 9a3 3 0 1 1 4 2.83c-.6.2-1.13.62-1.44 1.17M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+					</span>
+					<span class="rs-test-meta-value"><?php echo esc_html( absint( $total_questions ) ); ?></span>
+					<span class="rs-test-meta-label"><?php esc_html_e( 'Questions', 'ravanix' ); ?></span>
+				</td>
+				<td>
+					<span class="rs-test-meta-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+					</span>
+					<span class="rs-test-meta-value">
+						<?php
+						/* translators: %d: estimated number of minutes to complete the test. */
+						echo esc_html( sprintf( _n( '~%d min', '~%d min', $estimated_minutes, 'ravanix' ), $estimated_minutes ) );
+						?>
+					</span>
+					<span class="rs-test-meta-label"><?php esc_html_e( 'Est. time', 'ravanix' ); ?></span>
+				</td>
+				<td>
+					<span class="rs-test-meta-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="2"/><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5M16 14c2.8 0 5 2 5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+					</span>
+					<span class="rs-test-meta-value"><?php echo esc_html( absint( $participant_count ) ); ?></span>
+					<span class="rs-test-meta-label"><?php esc_html_e( 'Participants', 'ravanix' ); ?></span>
+				</td>
+			</tr>
+		</table>
 		<div class="rs-resume-banner" style="display:none;">
 			<p><?php esc_html_e( 'Your previous progress on this test has been saved.', 'ravanix' ); ?></p>
 			<button type="button" class="rs-btn rs-btn-start rs-btn-resume" <?php disabled( $requires_consent ); ?>><?php esc_html_e( 'Resume where you left off', 'ravanix' ); ?></button>
@@ -193,9 +228,12 @@ if ( $enable_save_resume && is_user_logged_in() ) {
 				$current_page = $page_index;
 			endif;
 			?>
+			<?php
+			$conditions = Ravanix_Branching::get_conditions( $q );
+			?>
 			<div class="rs-question" data-question-id="<?php echo intval( $q->id ); ?>"
-				<?php if ( ! empty( $q->branch_condition_question_id ) ) : ?>
-					data-branch-question="<?php echo intval( $q->branch_condition_question_id ); ?>" data-branch-value="<?php echo esc_attr( $q->branch_condition_value ); ?>"
+				<?php if ( ! empty( $conditions ) ) : ?>
+					data-branch-logic="<?php echo esc_attr( $q->branch_logic_type ); ?>" data-branch-conditions="<?php echo esc_attr( wp_json_encode( $conditions ) ); ?>"
 				<?php endif; ?>
 				>
 				<p class="rs-question-text"><span class="rs-q-num rs-q-num-live"><?php echo esc_html( $index + 1 ); ?>.</span> <?php echo esc_html( $q->question_text ); ?></p>
