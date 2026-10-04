@@ -13,8 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
 // All POST requests in this file go through the $this->check() helper method,
 // called at the start of every action, which performs both nonce verification
-// (check_admin_referer) and a capability check (current_user_can); because this
-// check happens in a shared method rather than directly in this file, static
+// (check_admin_referer) and a capability check (current_user_can, against
+// Ravanix_Roles::CAP_MANAGE_TESTS unless a call site passes a more specific
+// capability -- see Ravanix_Roles for the full list and its "never a
+// lockout" guarantee for existing site administrators); because this check
+// happens in a shared method rather than directly in this file, static
 // analysis tools cannot trace that connection. $_GET values that are only read
 // to determine display content (not to perform an action) also do not need a
 // nonce, since a nonce verifies *intent to perform an action*, not merely
@@ -46,8 +49,11 @@ class Ravanix_Admin_Handlers {
 		add_action( 'admin_post_ravanix_bulk_results_action', array( $this, 'bulk_results_action' ) );
 	}
 
-	private function check( $action ) {
-		if ( ! current_user_can( 'manage_options' ) ) {
+	private function check( $action, $capability = null ) {
+		if ( null === $capability ) {
+			$capability = Ravanix_Roles::CAP_MANAGE_TESTS;
+		}
+		if ( ! current_user_can( $capability ) ) {
 			wp_die( esc_html__( 'Unauthorized access', 'ravanix' ) );
 		}
 		check_admin_referer( $action );
@@ -143,8 +149,15 @@ class Ravanix_Admin_Handlers {
 		if ( $test_id ) {
 			$update_result = $wpdb->update( Ravanix_DB::tests(), $data, array( 'id' => $test_id ) );
 			if ( false === $update_result && $wpdb->last_error ) {
-				// A real database error; shown to the site admin for debugging
-				wp_die( esc_html__( 'Error saving data:', 'ravanix' ) . ' ' . esc_html( $wpdb->last_error ) );
+				// Never surface $wpdb->last_error (raw SQL error text) to the
+				// browser, even to a manage_options user — it can reveal table
+				// structure/column names beyond what's needed to fix the issue.
+				// The real error still goes to the PHP/debug log for the admin
+				// to investigate.
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'Ravanix: error saving test #' . $test_id . ': ' . $wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- intentionally gated behind WP_DEBUG, see project error-handling policy.
+				}
+				wp_die( esc_html__( 'An error occurred while saving. Please try again.', 'ravanix' ) );
 			}
 		} else {
 			if ( empty( $data['slug'] ) ) {
@@ -243,8 +256,6 @@ class Ravanix_Admin_Handlers {
 		// also ignored here server-side as defense in depth.
 		$pro_active = class_exists( 'Ravanix_Pro_Scoring' );
 
-		$raw_validity_threshold = isset( $_POST['validity_threshold'] ) ? sanitize_text_field( wp_unslash( $_POST['validity_threshold'] ) ) : '';
-
 		$data = array(
 			'test_id'     => $test_id,
 			'name'        => sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) ),
@@ -253,14 +264,63 @@ class Ravanix_Admin_Handlers {
 			'sort_order'  => intval( $_POST['sort_order'] ?? 0 ),
 			'interpretation_basis' => ( $pro_active && in_array( sanitize_key( wp_unslash( $_POST['interpretation_basis'] ?? '' ) ), array( 'raw', 't_score' ), true ) ) ? sanitize_key( wp_unslash( $_POST['interpretation_basis'] ) ) : 'raw',
 			'is_validity_scale'    => ( $pro_active && isset( $_POST['is_validity_scale'] ) ) ? 1 : 0,
-			'validity_threshold'   => ( $pro_active && isset( $_POST['is_validity_scale'] ) && '' !== $raw_validity_threshold ) ? floatval( $raw_validity_threshold ) : null,
+			// The admin form now only ever posts validity rules through
+			// validity_rule_operator[]/validity_rule_value[]/validity_rule_value2[]
+			// (handled below, after the dimension row itself exists), so this
+			// legacy column is always cleared on save going forward -- see the
+			// dimensions table's docblock in class-ravanix-activator.php.
+			'validity_threshold'   => null,
+			'validity_logic_type'  => ( isset( $_POST['validity_logic_type'] ) && 'or' === $_POST['validity_logic_type'] ) ? 'or' : 'and',
 		);
 
 		if ( $dim_id ) {
-			$wpdb->update( Ravanix_DB::dimensions(), $data, array( 'id' => $dim_id ) );
+			// Object-ownership check: a posted dimension_id must actually
+			// belong to the posted test_id, or this update would silently
+			// re-parent (or edit) another test's dimension. See
+			// Ravanix_DB::dimension_belongs_to_test()'s docblock.
+			if ( ! Ravanix_DB::dimension_belongs_to_test( $dim_id, $test_id ) ) {
+				wp_die( esc_html__( 'Invalid dimension for this test.', 'ravanix' ) );
+			}
+			$wpdb->update( Ravanix_DB::dimensions(), $data, array( 'id' => $dim_id, 'test_id' => $test_id ) );
 		} else {
-			$wpdb->insert( Ravanix_DB::dimensions(), $data );
+			$dim_id = $wpdb->insert( Ravanix_DB::dimensions(), $data ) ? $wpdb->insert_id : 0;
 		}
+
+		// Validity rule(s) (AND/OR): replace-all, same pattern as Conditional
+		// Logic's conditions in save_question(). Ravanix Pro-only (see
+		// $pro_active above); on Lite alone this always leaves the rules
+		// table empty for this dimension, which is fine since is_validity_scale
+		// itself is also forced to 0 above without Pro active.
+		if ( $dim_id ) {
+			$wpdb->delete( Ravanix_DB::validity_rules(), array( 'dimension_id' => $dim_id ) );
+			if ( $pro_active && ! empty( $_POST['validity_rule_operator'] ) ) {
+				$operators = wp_unslash( $_POST['validity_rule_operator'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated against the fixed VALIDITY_OPERATORS allowlist below.
+				$values    = isset( $_POST['validity_rule_value'] ) ? wp_unslash( $_POST['validity_rule_value'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each element is floatval()'d below.
+				$values2   = isset( $_POST['validity_rule_value2'] ) ? wp_unslash( $_POST['validity_rule_value2'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each element is floatval()'d below.
+				$order     = 0;
+				foreach ( $operators as $i => $operator ) {
+					if ( ! in_array( $operator, Ravanix_Pro_Scoring::VALIDITY_OPERATORS, true ) || ! isset( $values[ $i ] ) || '' === $values[ $i ] ) {
+						continue;
+					}
+					$wpdb->insert(
+						Ravanix_DB::validity_rules(),
+						array(
+							'dimension_id' => $dim_id,
+							'operator'     => $operator,
+							'value'        => floatval( $values[ $i ] ),
+							'value2'       => ( 'between' === $operator && isset( $values2[ $i ] ) && '' !== $values2[ $i ] ) ? floatval( $values2[ $i ] ) : null,
+							'sort_order'   => $order,
+						)
+					);
+					++$order;
+				}
+			}
+		}
+
+		// Invalidates Ravanix_DB::get_full_test()'s cache for this test, since
+		// a dimension (and the interpretations/questions nested under it) is
+		// part of that cached structure. See touch_test()'s docblock.
+		do_action( 'ravanix_test_structure_changed', $test_id );
 
 		$this->redirect_to_test( $test_id, 'dimensions', array( 'saved' => 1 ) );
 	}
@@ -271,9 +331,27 @@ class Ravanix_Admin_Handlers {
 		$dim_id  = intval( $_GET['dimension_id'] ?? 0 );
 		$test_id = intval( $_GET['test_id'] ?? 0 );
 
+		if ( ! Ravanix_DB::dimension_belongs_to_test( $dim_id, $test_id ) ) {
+			wp_die( esc_html__( 'Invalid dimension for this test.', 'ravanix' ) );
+		}
+
 		$wpdb->delete( Ravanix_DB::interpretations(), array( 'dimension_id' => $dim_id ) );
-		$wpdb->update( Ravanix_DB::questions(), array( 'dimension_id' => null ), array( 'dimension_id' => $dim_id ) );
-		$wpdb->delete( Ravanix_DB::dimensions(), array( 'id' => $dim_id ) );
+		// The norms table is created by Lite's own activator (Pro is only what
+		// populates/reads it), so cleaning it here doesn't create a Pro
+		// dependency -- without this, deleting a dimension left orphaned rows
+		// behind in ravanix_norms referencing a dimension_id that no longer exists.
+		$wpdb->delete( Ravanix_DB::norms(), array( 'dimension_id' => $dim_id ) );
+		// Same orphan-row issue for validity rules: the validity_rules table
+		// is created by Lite's own activator too (same reasoning as norms
+		// above), so this doesn't create a Pro dependency either.
+		$wpdb->delete( Ravanix_DB::validity_rules(), array( 'dimension_id' => $dim_id ) );
+		// Same orphan-row issue on the Pro multi-dimension-scoring link table:
+		// its dimension_id side was never cleaned up here either.
+		$wpdb->delete( Ravanix_DB::question_dimensions(), array( 'dimension_id' => $dim_id ) );
+		$wpdb->update( Ravanix_DB::questions(), array( 'dimension_id' => null ), array( 'dimension_id' => $dim_id, 'test_id' => $test_id ) );
+		$wpdb->delete( Ravanix_DB::dimensions(), array( 'id' => $dim_id, 'test_id' => $test_id ) );
+
+		do_action( 'ravanix_test_structure_changed', $test_id );
 
 		$this->redirect_to_test( $test_id, 'dimensions' );
 	}
@@ -287,49 +365,39 @@ class Ravanix_Admin_Handlers {
 		$q_id    = intval( $_POST['question_id'] ?? 0 );
 		$test_id = intval( $_POST['test_id'] ?? 0 );
 
-		// Skip logic: only accept a "depends on" question ID that (a) actually
-		// belongs to this same test (never another test's/site's question -- this
-		// is an object-level integrity check, the same principle as an
-		// authorization check, just applied to a foreign-key-like reference
-		// instead of to "which user may act"), (b) is not the question
-		// referencing itself, and (c) actually comes before this question in
-		// display order -- a question cannot meaningfully depend on one the
-		// participant hasn't been asked yet. An invalid/missing selection is
-		// silently treated as "no condition" (always shown) rather than
-		// rejecting the whole save, consistent with how every other optional
-		// field on this form behaves.
-		$branch_question_id = ! empty( $_POST['branch_condition_question_id'] ) ? intval( $_POST['branch_condition_question_id'] ) : 0;
-		$this_sort_order    = intval( $_POST['sort_order'] ?? 0 );
-		if ( $branch_question_id && $branch_question_id !== $q_id ) {
-			$source_sort_order = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT sort_order FROM " . Ravanix_DB::questions() . " WHERE id = %d AND test_id = %d",
-					$branch_question_id,
-					$test_id
-				)
-			);
-			if ( null === $source_sort_order || intval( $source_sort_order ) >= $this_sort_order ) {
-				$branch_question_id = 0;
-			}
-		} else {
-			$branch_question_id = 0;
-		}
-		$branch_value = $branch_question_id ? sanitize_text_field( wp_unslash( $_POST['branch_condition_value'] ?? '' ) ) : null;
+		$this_sort_order = intval( $_POST['sort_order'] ?? 0 );
+
+		// Same object-level integrity principle used throughout this file: a
+		// posted dimension_id must actually belong to this test, or a
+		// question could be silently attached to another test's dimension.
+		$posted_dimension_id = ! empty( $_POST['dimension_id'] ) ? intval( $_POST['dimension_id'] ) : 0;
+		$dimension_id         = ( $posted_dimension_id && Ravanix_DB::dimension_belongs_to_test( $posted_dimension_id, $test_id ) ) ? $posted_dimension_id : null;
 
 		$data = array(
 			'test_id'        => $test_id,
-			'dimension_id'   => ! empty( $_POST['dimension_id'] ) ? intval( $_POST['dimension_id'] ) : null,
+			'dimension_id'   => $dimension_id,
 			'question_text'  => sanitize_textarea_field( wp_unslash( $_POST['question_text'] ?? '' ) ),
 			'question_type'  => sanitize_key( $_POST['question_type'] ?? 'likert5' ),
 			'is_reverse'     => isset( $_POST['is_reverse'] ) ? 1 : 0,
 			'weight'         => floatval( $_POST['weight'] ?? 1 ),
 			'sort_order'     => intval( $_POST['sort_order'] ?? 0 ),
-			'branch_condition_question_id' => $branch_question_id ?: null,
-			'branch_condition_value'       => $branch_value,
+			// The admin form now only ever posts Conditional Logic through
+			// condition_source_question_id[]/condition_operator[]/condition_value[]
+			// (handled below, after the question row itself exists), so these
+			// two legacy columns are always cleared on save going forward --
+			// see the questions table's docblock in class-ravanix-activator.php.
+			'branch_condition_question_id' => null,
+			'branch_condition_value'       => null,
 		);
 
 		if ( $q_id ) {
-			$wpdb->update( Ravanix_DB::questions(), $data, array( 'id' => $q_id ) );
+			// Object-ownership check: a posted question_id must actually
+			// belong to the posted test_id, or this update would silently
+			// edit another test's question.
+			if ( ! Ravanix_DB::question_belongs_to_test( $q_id, $test_id ) ) {
+				wp_die( esc_html__( 'Invalid question for this test.', 'ravanix' ) );
+			}
+			$wpdb->update( Ravanix_DB::questions(), $data, array( 'id' => $q_id, 'test_id' => $test_id ) );
 		} else {
 			$wpdb->insert( Ravanix_DB::questions(), $data );
 			$q_id = $wpdb->insert_id;
@@ -375,6 +443,48 @@ class Ravanix_Admin_Handlers {
 		 */
 		do_action( 'ravanix_after_save_question', $q_id );
 
+		// Conditional Logic (AND/OR): replace-all, same pattern as options
+		// above. Each submitted source_question_id is validated exactly like
+		// the legacy branch_condition_question_id above -- must belong to
+		// this test, must not be this question itself, and must come before
+		// it in display order -- rather than trusting the posted id/order on
+		// their own; an invalid row is simply dropped, not rejected as a
+		// whole-form error, consistent with how the legacy single-condition
+		// field already behaved.
+		$wpdb->delete( Ravanix_DB::question_conditions(), array( 'question_id' => $q_id ) );
+		if ( ! empty( $_POST['condition_source_question_id'] ) ) {
+			$source_ids = wp_unslash( $_POST['condition_source_question_id'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each element is intval()'d below.
+			$operators  = isset( $_POST['condition_operator'] ) ? wp_unslash( $_POST['condition_operator'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated against the fixed OPERATORS allowlist below.
+			$values     = isset( $_POST['condition_value'] ) ? wp_unslash( $_POST['condition_value'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each element is sanitize_text_field()'d below.
+			$order      = 0;
+			foreach ( $source_ids as $i => $source_id ) {
+				$source_id = intval( $source_id );
+				if ( ! $source_id || $source_id === $q_id || ! Ravanix_DB::question_belongs_to_test( $source_id, $test_id ) ) {
+					continue;
+				}
+				$source_sort_order = $wpdb->get_var( $wpdb->prepare( 'SELECT sort_order FROM ' . Ravanix_DB::questions() . ' WHERE id = %d', $source_id ) );
+				if ( null === $source_sort_order || intval( $source_sort_order ) >= $this_sort_order ) {
+					continue;
+				}
+				$operator = isset( $operators[ $i ] ) && in_array( $operators[ $i ], Ravanix_Branching::OPERATORS, true ) ? $operators[ $i ] : 'equals';
+				$wpdb->insert(
+					Ravanix_DB::question_conditions(),
+					array(
+						'question_id'        => $q_id,
+						'source_question_id' => $source_id,
+						'operator'            => $operator,
+						'value'               => isset( $values[ $i ] ) ? sanitize_text_field( $values[ $i ] ) : '',
+						'sort_order'          => $order,
+					)
+				);
+				++$order;
+			}
+		}
+		$logic_type = isset( $_POST['branch_logic_type'] ) && 'or' === $_POST['branch_logic_type'] ? 'or' : 'and';
+		$wpdb->update( Ravanix_DB::questions(), array( 'branch_logic_type' => $logic_type ), array( 'id' => $q_id, 'test_id' => $test_id ) );
+
+		do_action( 'ravanix_test_structure_changed', $test_id );
+
 		$this->redirect_to_test( $test_id, 'questions', array( 'saved' => 1 ) );
 	}
 
@@ -384,21 +494,34 @@ class Ravanix_Admin_Handlers {
 		$q_id    = intval( $_GET['question_id'] ?? 0 );
 		$test_id = intval( $_GET['test_id'] ?? 0 );
 
+		if ( ! Ravanix_DB::question_belongs_to_test( $q_id, $test_id ) ) {
+			wp_die( esc_html__( 'Invalid question for this test.', 'ravanix' ) );
+		}
+
 		// Prevent a dangling branch reference: without this, any other question
 		// in this test whose "show only if" condition points at $q_id would
 		// become permanently, silently hidden after this delete, since its
 		// condition could never be satisfied again (the question it depends on
 		// no longer exists to be answered). Clearing it back to "always shown"
 		// is the same safe default a newly-created question already starts with.
+		// Covers both the legacy single-condition column and every row in the
+		// new question_conditions table that references $q_id as its source
+		// -- a question can be a dependency through either mechanism depending
+		// on whether it (or the dependent question) has been re-saved since
+		// Conditional Logic was introduced.
 		$wpdb->update(
 			Ravanix_DB::questions(),
 			array( 'branch_condition_question_id' => null, 'branch_condition_value' => null ),
 			array( 'branch_condition_question_id' => $q_id )
 		);
+		$wpdb->delete( Ravanix_DB::question_conditions(), array( 'source_question_id' => $q_id ) );
+		$wpdb->delete( Ravanix_DB::question_conditions(), array( 'question_id' => $q_id ) );
 
 		$wpdb->delete( Ravanix_DB::options(), array( 'question_id' => $q_id ) );
 		$wpdb->delete( Ravanix_DB::question_dimensions(), array( 'question_id' => $q_id ) );
-		$wpdb->delete( Ravanix_DB::questions(), array( 'id' => $q_id ) );
+		$wpdb->delete( Ravanix_DB::questions(), array( 'id' => $q_id, 'test_id' => $test_id ) );
+
+		do_action( 'ravanix_test_structure_changed', $test_id );
 
 		$this->redirect_to_test( $test_id, 'questions' );
 	}
@@ -412,8 +535,16 @@ class Ravanix_Admin_Handlers {
 		$int_id  = intval( $_POST['interpretation_id'] ?? 0 );
 		$test_id = intval( $_POST['test_id'] ?? 0 );
 
+		// Object-ownership check: a posted dimension_id must actually belong
+		// to the posted test_id, or an interpretation range could be
+		// silently attached to another test's dimension.
+		$dimension_id = intval( $_POST['dimension_id'] ?? 0 );
+		if ( ! Ravanix_DB::dimension_belongs_to_test( $dimension_id, $test_id ) ) {
+			wp_die( esc_html__( 'Invalid dimension for this test.', 'ravanix' ) );
+		}
+
 		$data = array(
-			'dimension_id' => intval( $_POST['dimension_id'] ?? 0 ),
+			'dimension_id' => $dimension_id,
 			'range_min'    => floatval( $_POST['range_min'] ?? 0 ),
 			'range_max'    => floatval( $_POST['range_max'] ?? 0 ),
 			'level_label'  => sanitize_text_field( wp_unslash( $_POST['level_label'] ?? '' ) ),
@@ -422,10 +553,19 @@ class Ravanix_Admin_Handlers {
 		);
 
 		if ( $int_id ) {
+			// Object-ownership check on the row being edited itself: a
+			// posted interpretation_id must already belong to this test
+			// (via its dimension), or this update would silently edit
+			// another test's interpretation range.
+			if ( ! Ravanix_DB::interpretation_belongs_to_test( $int_id, $test_id ) ) {
+				wp_die( esc_html__( 'Invalid interpretation range for this test.', 'ravanix' ) );
+			}
 			$wpdb->update( Ravanix_DB::interpretations(), $data, array( 'id' => $int_id ) );
 		} else {
 			$wpdb->insert( Ravanix_DB::interpretations(), $data );
 		}
+
+		do_action( 'ravanix_test_structure_changed', $test_id );
 
 		$this->redirect_to_test( $test_id, 'interpretations', array( 'saved' => 1 ) );
 	}
@@ -436,14 +576,20 @@ class Ravanix_Admin_Handlers {
 		$int_id  = intval( $_GET['interpretation_id'] ?? 0 );
 		$test_id = intval( $_GET['test_id'] ?? 0 );
 
+		if ( ! Ravanix_DB::interpretation_belongs_to_test( $int_id, $test_id ) ) {
+			wp_die( esc_html__( 'Invalid interpretation range for this test.', 'ravanix' ) );
+		}
+
 		$wpdb->delete( Ravanix_DB::interpretations(), array( 'id' => $int_id ) );
+
+		do_action( 'ravanix_test_structure_changed', $test_id );
 
 		$this->redirect_to_test( $test_id, 'interpretations' );
 	}
 	/* ---------------- Results ---------------- */
 
 	public function delete_result() {
-		$this->check( 'ravanix_delete_result' );
+		$this->check( 'ravanix_delete_result', Ravanix_Roles::CAP_DELETE_RESULTS );
 		$result_id = intval( $_GET['result_id'] ?? 0 );
 		$this->delete_result_by_id( $result_id );
 
@@ -464,7 +610,7 @@ class Ravanix_Admin_Handlers {
 	/* ---------------- Settings ---------------- */
 
 	public function save_settings() {
-		$this->check( 'ravanix_save_settings' );
+		$this->check( 'ravanix_save_settings', Ravanix_Roles::CAP_MANAGE_SETTINGS );
 
 		$posted_fields = isset( $_POST['participant_fields'] ) && is_array( $_POST['participant_fields'] ) ? wp_unslash( $_POST['participant_fields'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- this is a checkbox array; each sub-value is only ever checked with isset() below (the correct pattern for checkboxes, which carry no value to sanitize beyond their presence).
 		$default_fields = Ravanix_Settings::defaults()['participant_fields'];
@@ -497,6 +643,22 @@ class Ravanix_Admin_Handlers {
 				// comment in Ravanix_Settings::defaults() (WordPress.org Guideline 10).
 				'show_branding' => isset( $_POST['show_branding'] ) ? 1 : 0,
 				'brand_color'   => sanitize_hex_color( wp_unslash( $_POST['brand_color'] ?? '' ) ) ?: '#4a6fa5',
+				// Email notifications: subjects are single-line (sanitize_text_field
+				// also strips any stray newline, which matters since a subject header
+				// containing a raw newline is a classic header-injection vector).
+				// Bodies come from wp_editor() (the Classic/rich-text editor,
+				// requested for better message formatting) and are sent as HTML
+				// (see Ravanix_Notifications::send()), so they're sanitized with
+				// wp_kses_post() -- the same allowed-HTML whitelist already used
+				// for consent_text -- rather than sanitize_textarea_field(), which
+				// would strip every tag the editor just added.
+				'notify_admin_enabled'       => isset( $_POST['notify_admin_enabled'] ) ? 1 : 0,
+				'notify_admin_emails'        => sanitize_text_field( wp_unslash( $_POST['notify_admin_emails'] ?? '' ) ),
+				'notify_admin_subject'       => sanitize_text_field( wp_unslash( $_POST['notify_admin_subject'] ?? '' ) ),
+				'notify_admin_body'          => wp_kses_post( wp_unslash( $_POST['notify_admin_body'] ?? '' ) ),
+				'notify_participant_enabled' => isset( $_POST['notify_participant_enabled'] ) ? 1 : 0,
+				'notify_participant_subject' => sanitize_text_field( wp_unslash( $_POST['notify_participant_subject'] ?? '' ) ),
+				'notify_participant_body'    => wp_kses_post( wp_unslash( $_POST['notify_participant_body'] ?? '' ) ),
 			)
 		);
 
@@ -504,7 +666,47 @@ class Ravanix_Admin_Handlers {
 		// permalinks in this same request (no need to manually visit the "Permalinks" page)
 		Ravanix_CPT::register_and_flush();
 
-		wp_safe_redirect( admin_url( 'admin.php?page=ravanix-settings&saved=1' ) );
+		// Self-heals a real gap: sync_test_to_post() previously only ever ran
+		// from save_test() (a single test's own save), so a test created (or
+		// published) while "Display as a custom post type" was off never got
+		// a linked CPT post -- and stayed that way until an admin opened and
+		// re-saved that specific test. Whenever CPT display is on, every
+		// published test should have a CPT post; this catches up any that
+		// don't, right here, in the same request the admin enabled the setting.
+		if ( Ravanix_Settings::get_field( 'enable_cpt' ) ) {
+			global $wpdb;
+			$unsynced_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM " . Ravanix_DB::tests() . " WHERE status = 'published' AND cpt_post_id IS NULL" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name from Ravanix_DB::tests(), a fixed string, never user input; no other dynamic input in this query.
+			// Same "don't risk a timeout on a big catch-up loop" reasoning as
+			// Ravanix_Activator::activate() -- reuses its threshold and its
+			// background task rather than duplicating the logic here. On sites
+			// under the threshold this still runs inline in this same request
+			// (nothing changes from the admin's point of view).
+			if ( $unsynced_count > Ravanix_Activator::HEAVY_ACTIVATION_TEST_THRESHOLD ) {
+				Ravanix_Activator::schedule_async_activation_tasks();
+			} else {
+				$unsynced = $wpdb->get_results( "SELECT * FROM " . Ravanix_DB::tests() . " WHERE status = 'published' AND cpt_post_id IS NULL" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name from Ravanix_DB::tests(), a fixed string, never user input; no other dynamic input in this query.
+				foreach ( $unsynced as $test_row ) {
+					$new_cpt_post_id = Ravanix_CPT::sync_test_to_post( $test_row );
+					if ( $new_cpt_post_id ) {
+						$wpdb->update( Ravanix_DB::tests(), array( 'cpt_post_id' => $new_cpt_post_id ), array( 'id' => $test_row->id ) );
+					}
+				}
+			}
+		}
+
+		// The Roles & Permissions matrix (see admin/views/settings.php) is a
+		// separate table, not a Ravanix_Settings option, since it maps onto
+		// real WP_Role capabilities rather than plugin configuration; it's
+		// saved on this same request/nonce since it lives on the same page.
+		// isset() (not sanitize_text_field) is deliberate: this is a checkbox
+		// grid whose only meaningful values are "present" or "absent", exactly
+		// like $posted_fields above.
+		if ( isset( $_POST['ravanix_role_matrix'] ) && is_array( $_POST['ravanix_role_matrix'] ) ) {
+			Ravanix_Roles::save_matrix( wp_unslash( $_POST['ravanix_role_matrix'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- checkbox grid, see comment above; keys are matched against Ravanix_Roles::assignable_caps()/wp_roles() inside save_matrix(), never used as raw SQL/HTML.
+		}
+
+		$active_tab = isset( $_POST['active_tab'] ) ? sanitize_key( wp_unslash( $_POST['active_tab'] ) ) : 'general';
+		wp_safe_redirect( admin_url( 'admin.php?page=ravanix-settings&saved=1&active_tab=' . $active_tab ) );
 		exit;
 	}
 
@@ -596,6 +798,8 @@ class Ravanix_Admin_Handlers {
 			$imported++;
 		}
 
+		do_action( 'ravanix_test_structure_changed', $test_id );
+
 		wp_safe_redirect( admin_url( 'admin.php?page=ravanix-edit-test&test_id=' . $test_id . '&tab=questions&imported=' . $imported ) );
 		exit;
 	}
@@ -637,6 +841,8 @@ class Ravanix_Admin_Handlers {
 			$wpdb->update( Ravanix_DB::questions(), array( 'dimension_id' => $dimension_id ), array( 'id' => $qid, 'test_id' => $test_id ) );
 		}
 
+		do_action( 'ravanix_test_structure_changed', $test_id );
+
 		wp_safe_redirect( admin_url( 'admin.php?page=ravanix-edit-test&test_id=' . $test_id . '&tab=dimensions&assigned=' . count( $target_ids ) ) );
 		exit;
 	}
@@ -667,7 +873,7 @@ class Ravanix_Admin_Handlers {
 	}
 
 	public function bulk_results_action() {
-		$this->check( 'ravanix_bulk_results_action' );
+		$this->check( 'ravanix_bulk_results_action', Ravanix_Roles::CAP_DELETE_RESULTS );
 
 		$ids         = isset( $_POST['result_ids'] ) ? array_map( 'intval', (array) $_POST['result_ids'] ) : array();
 		$bulk_action = sanitize_key( $_POST['bulk_action'] ?? '' );

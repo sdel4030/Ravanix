@@ -106,23 +106,26 @@ class Ravanix_Ajax {
 		if ( $requires_consent && ! $consent_agreed ) {
 			wp_send_json_error( array( 'message' => __( 'Please agree to the consent notice before submitting.', 'ravanix' ) ) );
 		}
+		// A short content hash of the exact text just enforced above, so a
+		// later reviewer can tell which wording this particular participant
+		// actually agreed to -- see class-ravanix-activator.php's docblock
+		// on the results table's consent_version column.
+		$consent_version = $requires_consent ? substr( hash( 'sha256', $consent_text ), 0, 16 ) : '';
 
 		// Validation: every question that is actually active for this submission
-		// must be answered. A question is active unless it has a "show only if"
-		// (skip logic) condition that the submitted answers do not satisfy -- in
-		// which case it is expected to have no answer at all, and any stray value
-		// submitted for it anyway (e.g. a tampered request bypassing the
-		// client-side hide/show behavior) is deliberately ignored below rather
-		// than scored, since the branch condition says this question was not
-		// meant to be presented for this particular set of answers.
+		// must be answered. A question is active unless it has one or more
+		// "show only if" (skip logic) conditions -- combined by AND or OR, see
+		// Ravanix_Branching::is_active() -- that the submitted answers do not
+		// satisfy, in which case it is expected to have no answer at all, and
+		// any stray value submitted for it anyway (e.g. a tampered request
+		// bypassing the client-side hide/show behavior) is deliberately
+		// ignored below rather than scored, since the branch condition says
+		// this question was not meant to be presented for this particular
+		// set of answers.
 		$answers = array();
 		foreach ( $test->questions as $q ) {
-			if ( ! empty( $q->branch_condition_question_id ) ) {
-				$dep_value = $raw_answers[ $q->branch_condition_question_id ] ?? null;
-				$is_active = ( null !== $dep_value && '' !== $dep_value && (string) $dep_value === (string) $q->branch_condition_value );
-				if ( ! $is_active ) {
-					continue;
-				}
+			if ( ! Ravanix_Branching::is_active( $q, $raw_answers ) ) {
+				continue;
 			}
 			if ( ! isset( $raw_answers[ $q->id ] ) || '' === $raw_answers[ $q->id ] ) {
 				wp_send_json_error( array( 'message' => __( 'Please answer all the questions.', 'ravanix' ) ) );
@@ -199,7 +202,26 @@ class Ravanix_Ajax {
 
 		$guest_name = ! $user_id ? sanitize_text_field( wp_unslash( $_POST['guest_name'] ?? 'Guest' ) ) : '';
 
-		$result_id = Ravanix_Scoring::save_result( $test_id, $user_id, $guest_name, $answers, $scores, $participant_meta, array(), $guest_token, $consent_agreed );
+		$result_id = Ravanix_Scoring::save_result( $test_id, $user_id, $guest_name, $answers, $scores, $participant_meta, array(), $guest_token, $consent_agreed, $consent_version, $elapsed_ms );
+
+		/**
+		 * Fires once a result is completely finalized -- deliberately later than
+		 * (and separate from) 'ravanix_after_save_result', which fires *inside*
+		 * save_result() and is what Ravanix Pro uses to attach T-scores/composite
+		 * factors/validity flags to the row this same $result_id points to. Any
+		 * feature that needs the fully-finished result (Pro data included, if
+		 * active) -- such as Ravanix_Notifications -- should use this action
+		 * instead, so its behavior never depends on hook-priority ordering
+		 * against Pro's own 'ravanix_after_save_result' callback.
+		 *
+		 * @param int    $result_id
+		 * @param object $test             Full test object.
+		 * @param array  $scores           Per-dimension scores (Ravanix_Scoring::calculate()'s return value).
+		 * @param array  $participant_meta Collected participant fields for this submission.
+		 * @param int    $user_id          0 for a guest submission.
+		 * @param string $guest_name       Only meaningful when $user_id is 0.
+		 */
+		do_action( 'ravanix_result_finalized', $result_id, $test, $scores, $participant_meta, $user_id, $guest_name );
 
 		// A completed submission has no more use for a saved-progress draft.
 		if ( $user_id ) {

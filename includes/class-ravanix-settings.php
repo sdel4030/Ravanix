@@ -32,6 +32,20 @@ class Ravanix_Settings {
 			// tokens are derived from (see the --rs-brand custom property in
 			// ravanix-frontend.css); this default matches that file's own fallback.
 			'brand_color'   => '#4a6fa5',
+			// Email notifications (Ravanix_Notifications). Off by default -- an
+			// admin who wants them must explicitly turn each one on; a plugin
+			// should never start sending mail on its own after an update.
+			// notify_admin_emails is comma-separated; left empty, the admin
+			// notification falls back to this site's own admin_email at send
+			// time (not stored here), so it keeps working correctly if that
+			// changes later.
+			'notify_admin_enabled'       => 0,
+			'notify_admin_emails'        => '',
+			'notify_admin_subject'       => '',
+			'notify_admin_body'          => '',
+			'notify_participant_enabled' => 0,
+			'notify_participant_subject' => '',
+			'notify_participant_body'    => '',
 			'participant_fields' => array(
 				'full_name' => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Full name', 'ravanix' ) ),
 				'gender'    => array( 'enabled' => 0, 'required' => 0, 'label' => __( 'Gender', 'ravanix' ) ),

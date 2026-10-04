@@ -97,8 +97,11 @@ class Ravanix_Shortcodes {
 	}
 
 	/**
-	 * Shuffles $test->questions (if $test->randomize_questions) and, for
-	 * display only, each question's answer choices (if $test->randomize_options):
+	 * Shuffles $test->questions (if $test->randomize_questions -- via
+	 * dependency_aware_shuffle() below, never a plain shuffle(), so a
+	 * question is never placed before another question its Conditional
+	 * Logic depends on) and, for display only, each question's answer
+	 * choices (if $test->randomize_options):
 	 * - 'multiple' / 'forced_choice' questions: their own ->options rows.
 	 * - 'likert5' / 'likert7' / 'binary' questions: these have no options rows
 	 *   of their own (their choice labels are a fixed, built-in list — see
@@ -113,7 +116,7 @@ class Ravanix_Shortcodes {
 		}
 
 		if ( ! empty( $test->randomize_questions ) ) {
-			shuffle( $test->questions );
+			$test->questions = self::dependency_aware_shuffle( $test->questions );
 		}
 
 		foreach ( $test->questions as $q ) {
@@ -133,6 +136,70 @@ class Ravanix_Shortcodes {
 				shuffle( $q->options );
 			}
 		}
+	}
+
+	/**
+	 * A random shuffle that still guarantees every question comes after
+	 * every other question its Conditional Logic depends on (directly or
+	 * transitively) -- see the project's branching policy against randomly
+	 * reordering a dependency graph and silently breaking branching. This is
+	 * a randomized topological sort: repeatedly picks uniformly at random
+	 * among the questions whose dependencies have already been placed, which
+	 * is the general form of "randomize only within dependency-safe groups"
+	 * -- questions with no relationship to each other still shuffle freely,
+	 * only an actual dependency edge constrains the order.
+	 *
+	 * Defensive against a cycle (which the admin save path already prevents
+	 * via its "must come before this question in display order" check, so
+	 * this should never actually trigger): if no question is ever "ready",
+	 * whatever remains is appended in its original order rather than looping
+	 * forever, so a test can never fail to render because of this.
+	 *
+	 * @param object[] $questions
+	 * @return object[]
+	 */
+	private static function dependency_aware_shuffle( array $questions ) {
+		$depends_on = array();
+		foreach ( $questions as $q ) {
+			$depends_on[ intval( $q->id ) ] = Ravanix_Branching::get_dependency_ids( $q );
+		}
+
+		$placed    = array();
+		$result    = array();
+		$remaining = $questions;
+
+		while ( ! empty( $remaining ) ) {
+			$ready_indices = array();
+			foreach ( $remaining as $i => $q ) {
+				$ok = true;
+				foreach ( $depends_on[ intval( $q->id ) ] as $dep_id ) {
+					if ( ! isset( $placed[ $dep_id ] ) ) {
+						$ok = false;
+						break;
+					}
+				}
+				if ( $ok ) {
+					$ready_indices[] = $i;
+				}
+			}
+
+			if ( empty( $ready_indices ) ) {
+				// Should be unreachable (see docblock); fail safe rather than loop forever.
+				foreach ( $remaining as $q ) {
+					$result[] = $q;
+					$placed[ intval( $q->id ) ] = true;
+				}
+				break;
+			}
+
+			$pick = $ready_indices[ array_rand( $ready_indices ) ];
+			$q    = $remaining[ $pick ];
+			$result[] = $q;
+			$placed[ intval( $q->id ) ] = true;
+			array_splice( $remaining, $pick, 1 );
+		}
+
+		return $result;
 	}
 
 	/**
@@ -176,30 +243,46 @@ class Ravanix_Shortcodes {
 	 * [ravanix_test_list]  List of published tests
 	 */
 	/**
-	 * [ravanix_test_list layout="grid" columns="3" show_image="1" show_excerpt="1"]
+	 * [ravanix_test_list layout="grid" columns="3" show_image="1" show_excerpt="1" limit="0" order="newest"]
 	 * List of published tests. This same method is also called as the
 	 * render_callback for the "Questionnaires List" Gutenberg block (see class-ravanix-block.php).
 	 */
 	public function render_test_list( $atts = array() ) {
 		$atts = shortcode_atts(
 			array(
-				'layout'       => 'list', // 'list' | 'grid'
+				'layout'       => 'list', // 'list' | 'grid' | 'titles'
 				'columns'      => 3,
 				'show_image'   => 1,
 				'show_excerpt' => 1,
+				'limit'        => 0, // 0 = show every published test
+				'order'        => 'newest', // 'newest' | 'random'
 			),
 			$atts,
 			'ravanix_test_list'
 		);
 
 		global $wpdb;
-		$tests = $wpdb->get_results( "SELECT id, title, description, cpt_post_id, featured_image_id FROM " . Ravanix_DB::tests() . " WHERE status = 'published' ORDER BY id DESC" );
+
+		// $order_sql is chosen from this fixed, hardcoded pair of SQL
+		// fragments -- never built from the raw $atts['order'] string -- so
+		// there is nothing here for a malicious "order" value to inject.
+		$order_sql = ( 'random' === $atts['order'] ) ? 'RAND()' : 'id DESC';
+		$limit     = max( 0, intval( $atts['limit'] ) );
+		$sql       = "SELECT id, title, description, cpt_post_id, featured_image_id FROM " . Ravanix_DB::tests() . " WHERE status = 'published' ORDER BY {$order_sql}";
+		if ( $limit > 0 ) {
+			$sql = $wpdb->prepare( $sql . ' LIMIT %d', $limit );
+		}
+		$tests = $wpdb->get_results( $sql );
 
 		wp_enqueue_style( 'ravanix-frontend' );
 
 		$can_see_hint = current_user_can( 'manage_options' );
-		$layout       = ( 'grid' === $atts['layout'] ) ? 'grid' : 'list';
+		$layout       = in_array( $atts['layout'], array( 'grid', 'list', 'titles' ), true ) ? $atts['layout'] : 'list';
 		$columns      = max( 2, min( 4, intval( $atts['columns'] ) ) );
+
+		if ( 'titles' === $layout ) {
+			return $this->render_test_titles( $tests );
+		}
 
 		ob_start();
 		?>
@@ -243,5 +326,85 @@ class Ravanix_Shortcodes {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * The "Titles only" list layout: just each published test's title, marked
+	 * with the small Ravanix glyph (see get_titles_layout_icon() below)
+	 * instead of a default browser bullet -- no image, excerpt, button, or
+	 * (deliberately, since this layout is meant to stay minimal) the
+	 * admin-only "no dedicated page yet" hint the card layouts show; a title
+	 * with nothing to link to just renders as plain text instead.
+	 */
+	private function render_test_titles( $tests ) {
+		ob_start();
+		?>
+		<div class="rs-test-list rs-test-list-titles">
+			<?php if ( empty( $tests ) ) : ?>
+				<p><?php esc_html_e( 'No test has been published yet.', 'ravanix' ); ?></p>
+			<?php else : ?>
+				<ul class="rs-test-titles">
+					<?php foreach ( $tests as $t ) : ?>
+						<?php $permalink = ( $t->cpt_post_id && get_post( $t->cpt_post_id ) ) ? get_permalink( $t->cpt_post_id ) : ''; ?>
+						<li>
+							<span class="rs-test-titles-icon"><?php echo wp_kses( self::get_titles_layout_icon(), self::get_titles_layout_icon_allowed_tags() ); ?></span>
+							<?php if ( $permalink ) : ?>
+								<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $t->title ); ?></a>
+							<?php else : ?>
+								<span><?php echo esc_html( $t->title ); ?></span>
+							<?php endif; ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * A small inline SVG "mark" for Ravanix -- a clipboard with a checkmark,
+	 * standing in for "a completed questionnaire" -- used as the bullet next
+	 * to each title in the "Titles only" list layout. currentColor/no fixed
+	 * size, same convention as the meta-row icons in templates/frontend-test.php,
+	 * so it inherits this layout's icon color (--md-primary, which itself
+	 * derives from the admin's brand_color) and whatever size its CSS gives it.
+	 */
+	public static function get_titles_layout_icon() {
+		return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor" stroke-width="2"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6H8V4.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m8.5 12.5 2 2 4-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+	}
+
+	/**
+	 * wp_kses() allowlist for get_titles_layout_icon()'s markup above --
+	 * scoped to exactly the tags/attributes that SVG uses, nothing broader.
+	 * The icon itself is a fixed string with no user input, but Plugin
+	 * Check (rightly) still wants an explicit escaping call at the echo
+	 * site rather than relying on that fact silently.
+	 */
+	private static function get_titles_layout_icon_allowed_tags() {
+		return array(
+			'svg'  => array(
+				'viewbox'     => true,
+				'fill'        => true,
+				'xmlns'       => true,
+				'aria-hidden' => true,
+			),
+			'rect' => array(
+				'x'            => true,
+				'y'            => true,
+				'width'        => true,
+				'height'       => true,
+				'rx'           => true,
+				'stroke'       => true,
+				'stroke-width' => true,
+			),
+			'path' => array(
+				'd'               => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-linejoin' => true,
+				'stroke-linecap'  => true,
+			),
+		);
 	}
 }

@@ -60,7 +60,7 @@ class Ravanix_Block {
 			'ravanix/questionnaire',
 			array(
 				'title'           => __( 'Ravanix – Questionnaire', 'ravanix' ),
-				'description'     => __( 'Display a specific questionnaire, or a list of all published questionnaires as a list or a grid.', 'ravanix' ),
+				'description'     => __( 'Display a specific questionnaire, or a list of all published questionnaires as a grid, a list, or titles only.', 'ravanix' ),
 				'category'        => 'widgets',
 				'icon'            => 'forms',
 				'editor_script'   => 'ravanix-block-editor',
@@ -73,6 +73,8 @@ class Ravanix_Block {
 					'columns'     => array( 'type' => 'number', 'default' => 3 ),
 					'showImage'   => array( 'type' => 'boolean', 'default' => true ),
 					'showExcerpt' => array( 'type' => 'boolean', 'default' => true ),
+					'limit'       => array( 'type' => 'number', 'default' => 0 ), // 0 = show every published test
+					'order'       => array( 'type' => 'string', 'default' => 'newest' ), // 'newest' | 'random'
 					'hideHeader'  => array( 'type' => 'boolean', 'default' => false ),
 				),
 			)
@@ -89,6 +91,8 @@ class Ravanix_Block {
 				'columns'     => 3,
 				'showImage'   => true,
 				'showExcerpt' => true,
+				'limit'       => 0,
+				'order'       => 'newest',
 				'hideHeader'  => false,
 			)
 		);
@@ -118,6 +122,8 @@ class Ravanix_Block {
 				'columns'      => intval( $attributes['columns'] ),
 				'show_image'   => $attributes['showImage'] ? 1 : 0,
 				'show_excerpt' => $attributes['showExcerpt'] ? 1 : 0,
+				'limit'        => intval( $attributes['limit'] ),
+				'order'        => $attributes['order'],
 			)
 		);
 	}

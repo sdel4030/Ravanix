@@ -56,14 +56,34 @@ class Ravanix_Access {
 	}
 
 	/**
-	 * Gets/creates the guest browser ID from a cookie (for guest-session identification and anti-abuse controls)
+	 * Gets/creates the guest browser ID from a cookie (for guest-session identification and anti-abuse controls).
+	 *
+	 * This token is also the sole authorization credential a guest (non
+	 * logged-in) participant has for viewing/downloading their own result
+	 * later (see the ownership check next to every result-access path, e.g.
+	 * Ravanix_Pro_Pdf's is_owner check), so it must be a cryptographically
+	 * unpredictable value, not merely "random-looking". random_bytes() is
+	 * PHP's CSPRNG (available unconditionally since PHP 7.0, well below this
+	 * plugin's PHP 7.4+ requirement); a length of 32 raw bytes (64 hex chars)
+	 * matches the ≥32-byte token size used elsewhere for the same reason.
+	 * A previously-issued cookie value keeps working unchanged after this
+	 * change — only the format of *newly minted* tokens differs, and every
+	 * comparison against a stored token already uses hash_equals(), which
+	 * doesn't care about the token's length or character set.
 	 */
 	public static function get_or_set_guest_token() {
 		if ( ! empty( $_COOKIE['ravanix_guest_token'] ) ) {
 			return sanitize_text_field( wp_unslash( $_COOKIE['ravanix_guest_token'] ) );
 		}
 
-		$token = wp_generate_password( 32, false, false );
+		try {
+			$token = bin2hex( random_bytes( 32 ) );
+		} catch ( Exception $e ) {
+			// Practically unreachable (random_bytes() only throws if the
+			// platform's CSPRNG is unavailable), but fall back rather than
+			// fatal so a submission can still proceed.
+			$token = wp_generate_password( 64, false, false );
+		}
 
 		if ( ! headers_sent() ) {
 			setcookie( 'ravanix_guest_token', $token, time() + ( 3 * YEAR_IN_SECONDS ), COOKIEPATH ?: '/', COOKIE_DOMAIN, is_ssl(), true );

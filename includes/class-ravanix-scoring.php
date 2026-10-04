@@ -118,7 +118,21 @@ class Ravanix_Scoring {
 				'is_validity_scale'     => false,
 				'validity_threshold'    => null,
 				'level_label'           => $interpretation ? $interpretation->level_label : __( 'Unspecified', 'ravanix' ),
-				'level_color'           => $interpretation ? $interpretation->level_color : '#999999',
+				// Every place this is displayed (the frontend result page's
+				// .rs-score-level badge, the admin result view, PDF/CSV
+				// reports) draws it as a background behind fixed WHITE text,
+				// exactly like the --rs-brand color; so it needs the same
+				// WCAG-AA-safe treatment as ensure_min_contrast_with_white()
+				// already gives the admin's brand color (see
+				// enqueue_frontend_assets() in ravanix.php). Without this, an
+				// admin picking a light interpretation-range color (e.g. a
+				// pale yellow "caution" level) — or simply having no matching
+				// interpretation, where the old raw fallback '#999999' itself
+				// only measures ~2.85:1, below the 4.5:1 AA minimum — would
+				// silently produce unreadable white-on-light text. The
+				// admin's own saved color is never modified; only this
+				// computed, stored-with-the-result value is adjusted.
+				'level_color'           => Ravanix_Settings::ensure_min_contrast_with_white( $interpretation ? $interpretation->level_color : '#999999' ),
 				'description'           => $interpretation ? $interpretation->description : $no_interpretation_message,
 			);
 		}
@@ -167,8 +181,23 @@ class Ravanix_Scoring {
 	/**
 	 * Saves the full result to the database and returns the result's ID
 	 */
-	public static function save_result( $test_id, $user_id, $guest_name, $answers, $scores, $participant_meta = array(), $validity = array(), $guest_token = '', $consent_agreed = false ) {
+	public static function save_result( $test_id, $user_id, $guest_name, $answers, $scores, $participant_meta = array(), $validity = array(), $guest_token = '', $consent_agreed = false, $consent_version = '', $elapsed_ms = null ) {
 		global $wpdb;
+
+		// consented_at is deliberately the same timestamp as submitted_at
+		// below, not a separately-tracked moment -- see the docblock on the
+		// consent_version/consented_at columns in class-ravanix-activator.php
+		// for why. Left null when there was nothing to agree to (no consent
+		// text was shown for this submission), matching consent_version.
+		$now = current_time( 'mysql' );
+
+		// Test Versioning: stamps this result with the id of the immutable
+		// snapshot matching the test's scoring-relevant definition *right
+		// now*, creating that snapshot first if the definition has changed
+		// since the last result. See Ravanix_DB::get_or_create_version()'s
+		// docblock. Deliberately best-effort: a failure here must never block
+		// the participant's submission, so $test_version_id can be null.
+		$test_version_id = Ravanix_DB::get_or_create_version( $test_id );
 
 		$wpdb->insert(
 			Ravanix_DB::results(),
@@ -182,10 +211,19 @@ class Ravanix_Scoring {
 				'answers_json'        => wp_json_encode( $answers ),
 				'is_validity_flagged' => ! empty( $validity['flagged'] ) ? 1 : 0,
 				'validity_notes'      => ! empty( $validity['notes'] ) ? implode( ' ', $validity['notes'] ) : null,
+				// Already collected pre-submission for the minimum-completion-time
+				// anti-spam check (Ravanix_Access::check_honeypot_and_timing());
+				// persisted here too so Ravanix Pro's response-quality analysis
+				// (and research exports) can use it. See the results table's
+				// docblock in class-ravanix-activator.php.
+				'elapsed_ms'          => null !== $elapsed_ms ? intval( $elapsed_ms ) : null,
 				'consent_agreed'      => $consent_agreed ? 1 : 0,
-				'submitted_at'        => current_time( 'mysql' ),
+				'consent_version'     => $consent_agreed && $consent_version ? $consent_version : null,
+				'consented_at'        => $consent_agreed && $consent_version ? $now : null,
+				'test_version_id'     => $test_version_id,
+				'submitted_at'        => $now,
 			),
-			array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%d', '%s' )
+			array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%d', '%d', '%s', '%s', '%d', '%s' )
 		);
 
 		$result_id = $wpdb->insert_id;
