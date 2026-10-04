@@ -96,6 +96,9 @@ $results = $wpdb->get_results(
 		<input type="hidden" name="action" value="ravanix_bulk_results_action">
 		<input type="hidden" name="filter_test_id" value="<?php echo intval( $filter_test_id ); ?>">
 
+		<?php $can_delete_results = Ravanix_Roles::current_user_can( Ravanix_Roles::CAP_DELETE_RESULTS ); ?>
+
+		<?php if ( $can_delete_results ) : ?>
 		<div class="tablenav top">
 			<div class="alignleft actions">
 				<select name="bulk_action">
@@ -108,11 +111,14 @@ $results = $wpdb->get_results(
 				</button>
 			</div>
 		</div>
+		<?php endif; ?>
 
 		<table class="wp-list-table widefat fixed striped rs-table">
 			<thead>
 				<tr>
+					<?php if ( $can_delete_results ) : ?>
 					<td class="manage-column column-cb check-column"><input type="checkbox" id="rs-results-select-all"></td>
+					<?php endif; ?>
 					<th><?php esc_html_e( 'Date', 'ravanix' ); ?></th>
 					<th class="column-primary"><?php esc_html_e( 'Test', 'ravanix' ); ?></th>
 					<th><?php esc_html_e( 'Participant', 'ravanix' ); ?></th>
@@ -122,7 +128,7 @@ $results = $wpdb->get_results(
 			</thead>
 			<tbody>
 				<?php if ( empty( $results ) ) : ?>
-					<tr><td colspan="6"><?php esc_html_e( 'No results have been recorded yet.', 'ravanix' ); ?></td></tr>
+					<tr><td colspan="<?php echo $can_delete_results ? 6 : 5; ?>"><?php esc_html_e( 'No results have been recorded yet.', 'ravanix' ); ?></td></tr>
 				<?php endif; ?>
 				<?php foreach ( $results as $r ) : ?>
 					<?php
@@ -137,7 +143,9 @@ $results = $wpdb->get_results(
 					}
 					?>
 					<tr>
+						<?php if ( $can_delete_results ) : ?>
 						<th class="check-column"><input type="checkbox" name="result_ids[]" value="<?php echo intval( $r->id ); ?>" class="rs-row-checkbox"></th>
+						<?php endif; ?>
 						<td data-colname="<?php esc_attr_e( 'Date', 'ravanix' ); ?>"><?php echo esc_html( date_i18n( 'Y/m/d H:i', strtotime( $r->submitted_at ) ) ); ?></td>
 						<td class="column-primary" data-colname="<?php esc_attr_e( 'Test', 'ravanix' ); ?>">
 							<?php echo esc_html( $r->test_title ); ?>
@@ -173,9 +181,11 @@ $results = $wpdb->get_results(
 							 */
 							do_action( 'ravanix_results_list_row_actions', $r->id );
 							?>
+							<?php if ( $can_delete_results ) : ?>
 							|
 							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ravanix_delete_result&result_id=' . $r->id ), 'ravanix_delete_result' ) ); ?>"
 								onclick="return confirm('<?php echo esc_js( __( 'Delete this result?', 'ravanix' ) ); ?>');" class="rs-link-danger"><?php esc_html_e( 'Delete', 'ravanix' ); ?></a>
+							<?php endif; ?>
 						</td>
 					</tr>
 				<?php endforeach; ?>

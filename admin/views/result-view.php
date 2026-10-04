@@ -39,6 +39,13 @@ $scores = $wpdb->get_results( $wpdb->prepare(
 	 WHERE rs.result_id = %d", $view_result_id
 ) );
 
+$result_version = ! empty( $result->test_version_id ) ? $wpdb->get_row( $wpdb->prepare(
+	"SELECT version_number FROM " . Ravanix_DB::test_versions() . " WHERE id = %d", intval( $result->test_version_id )
+) ) : null;
+$latest_version_number = $wpdb->get_var( $wpdb->prepare(
+	"SELECT MAX(version_number) FROM " . Ravanix_DB::test_versions() . " WHERE test_id = %d", intval( $result->test_id )
+) );
+
 $full_test  = Ravanix_DB::get_full_test( $result->test_id );
 $p_meta     = ! empty( $result->participant_meta ) ? json_decode( $result->participant_meta, true ) : array();
 $p_age      = isset( $p_meta['age']['value'] ) ? intval( $p_meta['age']['value'] ) : null;
@@ -100,6 +107,15 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 	<p class="description">
 		<?php esc_html_e( 'Test:', 'ravanix' ); ?> <strong><?php echo esc_html( $result->test_title ); ?></strong> —
 		<?php esc_html_e( 'Date:', 'ravanix' ); ?> <?php echo esc_html( date_i18n( 'Y/m/d H:i', strtotime( $result->submitted_at ) ) ); ?>
+		<?php if ( ! empty( $result->elapsed_ms ) ) : ?>
+			—
+			<?php
+			$minutes = floor( $result->elapsed_ms / 60000 );
+			$seconds = round( ( $result->elapsed_ms % 60000 ) / 1000 );
+			/* translators: 1: minutes, 2: seconds */
+			echo esc_html( sprintf( __( 'Completion time: %1$dm %2$ds', 'ravanix' ), $minutes, $seconds ) );
+			?>
+		<?php endif; ?>
 	</p>
 
 	<?php if ( ! empty( $result->is_validity_flagged ) ) : ?>
@@ -108,20 +124,63 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 		</div>
 	<?php endif; ?>
 
+	<?php if ( ! empty( $result->is_quality_flagged ) ) : ?>
+		<div class="notice notice-warning">
+			<p><?php echo esc_html( $result->quality_notes ); ?></p>
+		</div>
+	<?php endif; ?>
+
+	<?php if ( ! empty( $result->consent_agreed ) ) : ?>
+		<p class="description">
+			<?php esc_html_e( 'Consent:', 'ravanix' ); ?>
+			<?php esc_html_e( 'Agreed', 'ravanix' ); ?>
+			<?php if ( ! empty( $result->consented_at ) ) : ?>
+				<?php echo esc_html( date_i18n( 'Y/m/d H:i', strtotime( $result->consented_at ) ) ); ?>
+			<?php endif; ?>
+			<?php if ( ! empty( $result->consent_version ) ) : ?>
+				<?php
+				/* translators: %s: a short hash identifying the exact consent text wording that was shown */
+				echo esc_html( sprintf( __( '(wording: %s)', 'ravanix' ), $result->consent_version ) );
+				?>
+			<?php endif; ?>
+		</p>
+	<?php endif; ?>
+
+	<?php if ( $result_version ) : ?>
+		<p class="description">
+			<?php
+			/* translators: %d: a per-test version number, e.g. "Test definition: version 3" */
+			echo esc_html( sprintf( __( 'Test definition: version %d', 'ravanix' ), intval( $result_version->version_number ) ) );
+			?>
+			<?php if ( $latest_version_number && intval( $result_version->version_number ) !== intval( $latest_version_number ) ) : ?>
+				<span style="color:#b32d2e;">
+					<?php
+					/* translators: %d: the test's current version number */
+					echo esc_html( sprintf( __( '— the questionnaire has since been edited (now version %d); scores here may not be directly comparable to a more recent attempt.', 'ravanix' ), intval( $latest_version_number ) ) );
+					?>
+				</span>
+			<?php endif; ?>
+		</p>
+	<?php elseif ( empty( $result->test_version_id ) ) : ?>
+		<p class="description"><?php esc_html_e( 'Test definition: not recorded (this result predates version tracking).', 'ravanix' ); ?></p>
+	<?php endif; ?>
+
 	<?php
 	$participant_meta = ! empty( $result->participant_meta ) ? json_decode( $result->participant_meta, true ) : array();
 	?>
 	<?php if ( ! empty( $participant_meta ) ) : ?>
-		<table class="wp-list-table widefat striped" style="max-width:500px;margin-bottom:20px;">
-			<tbody>
-				<?php foreach ( $participant_meta as $field ) : ?>
-					<tr>
-						<th style="width:160px;"><?php echo esc_html( $field['label'] ); ?></th>
-						<td><?php echo esc_html( $field['value'] ); ?></td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
+		<div class="rs-table-scroll-x">
+			<table class="wp-list-table widefat striped" style="max-width:500px;margin-bottom:20px;">
+				<tbody>
+					<?php foreach ( $participant_meta as $field ) : ?>
+						<tr>
+							<th style="width:160px;"><?php echo esc_html( $field['label'] ); ?></th>
+							<td><?php echo esc_html( $field['value'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
 	<?php endif; ?>
 
 	<?php
@@ -152,8 +211,46 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 		<?php endif; ?>
 	<?php endif; ?>
 
+	<?php
+	// Local helper (not a class method: this is Pro-only display data inside
+	// a Lite template, so it stays self-contained here rather than adding a
+	// cross-plugin dependency) -- turns a norm's snapshotted provenance
+	// metadata into a one-line tooltip string, e.g.
+	// "Norm set: X | Source: Y | N=300 | Iran | 2023".
+	$render_norm_tooltip = function ( $metadata ) {
+		if ( empty( $metadata ) ) {
+			return '';
+		}
+		$parts = array();
+		if ( ! empty( $metadata['norm_set_name'] ) ) {
+			$parts[] = $metadata['norm_set_name'] . ( ! empty( $metadata['norm_version'] ) ? ' v' . $metadata['norm_version'] : '' );
+		}
+		if ( ! empty( $metadata['source_reference'] ) ) {
+			/* translators: %s: a norm's source/reference text */
+			$parts[] = sprintf( __( 'Source: %s', 'ravanix' ), $metadata['source_reference'] );
+		}
+		if ( ! empty( $metadata['population'] ) ) {
+			$parts[] = $metadata['population'];
+		}
+		if ( ! empty( $metadata['country'] ) || ! empty( $metadata['language'] ) ) {
+			$parts[] = trim( ( $metadata['country'] ?? '' ) . ( ! empty( $metadata['language'] ) ? ' (' . $metadata['language'] . ')' : '' ) );
+		}
+		if ( ! empty( $metadata['sample_size'] ) ) {
+			$parts[] = 'N=' . intval( $metadata['sample_size'] );
+		}
+		if ( ! empty( $metadata['collection_year'] ) ) {
+			$parts[] = intval( $metadata['collection_year'] );
+		}
+		if ( ! empty( $metadata['methodology_notes'] ) ) {
+			$parts[] = $metadata['methodology_notes'];
+		}
+		return implode( ' — ', $parts );
+	};
+	?>
+
 	<?php if ( ! empty( $composite_scores ) ) : ?>
 		<h2><?php esc_html_e( 'Primary (composite) factor scores', 'ravanix' ); ?></h2>
+		<div class="rs-table-scroll-x">
 		<table class="wp-list-table widefat striped" style="margin-bottom:25px;max-width:900px;">
 			<thead><tr>
 				<th><?php esc_html_e( 'Factor', 'ravanix' ); ?></th>
@@ -170,7 +267,17 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 						<td><strong><?php echo esc_html( $cs['name'] ); ?></strong></td>
 						<td><?php echo esc_html( $cs['raw_score'] . ' ' . __( 'From', 'ravanix' ) . ' ' . $cs['max_score'] ); ?></td>
 						<td><?php echo esc_html( $cs['percentage'] ); ?>%</td>
-						<td><?php echo ( null !== $cs['t_score'] ) ? esc_html( $cs['t_score'] ) : '—'; ?></td>
+						<td>
+							<?php if ( null !== $cs['t_score'] ) : ?>
+								<?php echo esc_html( $cs['t_score'] ); ?>
+								<?php if ( ! empty( $cs['norm_group_label'] ) ) : ?>
+									<?php $tooltip = $render_norm_tooltip( $cs['norm_metadata'] ?? null ); ?>
+									<br><span class="description"<?php echo $tooltip ? ' title="' . esc_attr( $tooltip ) . '" style="cursor:help;border-bottom:1px dotted;"' : ''; ?>><?php echo esc_html( $cs['norm_group_label'] ); ?></span>
+								<?php endif; ?>
+							<?php else : ?>
+								—
+							<?php endif; ?>
+						</td>
 						<td><?php echo ( null !== $cs['percentile'] ) ? esc_html( $cs['percentile'] ) . '%' : '—'; ?></td>
 						<td><span class="rs-badge" style="background:<?php echo esc_attr( $cs['level_color'] ); ?>;color:#fff;"><?php echo esc_html( $cs['level_label'] ); ?></span></td>
 						<td><?php echo wp_kses_post( $cs['description'] ); ?></td>
@@ -178,8 +285,10 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+		</div>
 	<?php endif; ?>
 
+	<div class="rs-table-scroll-x">
 	<table class="wp-list-table widefat striped" style="margin-top:20px;max-width:900px;">
 		<thead><tr>
 			<th><?php esc_html_e( 'Dimension', 'ravanix' ); ?></th>
@@ -200,7 +309,8 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 						<?php if ( null !== $s->t_score ) : ?>
 							<?php echo esc_html( $s->t_score ); ?>
 							<?php if ( $s->norm_group_label ) : ?>
-								<br><span class="description"><?php echo esc_html( $s->norm_group_label ); ?></span>
+								<?php $tooltip = $render_norm_tooltip( $s->norm_metadata_json ? json_decode( $s->norm_metadata_json, true ) : null ); ?>
+								<br><span class="description"<?php echo $tooltip ? ' title="' . esc_attr( $tooltip ) . '" style="cursor:help;border-bottom:1px dotted;"' : ''; ?>><?php echo esc_html( $s->norm_group_label ); ?></span>
 							<?php endif; ?>
 						<?php else : ?>
 							—
@@ -213,6 +323,7 @@ $participant = $result->user_id && $result->display_name ? $result->display_name
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+	</div>
 
 	<?php
 	/**

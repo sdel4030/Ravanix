@@ -99,6 +99,7 @@ foreach ( $test->dimensions as $d ) {
 			<?php if ( empty( $d->interpretations ) ) : ?>
 				<p class="description"><?php esc_html_e( 'No interpretation range has been defined for this dimension.', 'ravanix' ); ?></p>
 			<?php else : ?>
+				<div class="rs-table-scroll-x">
 				<table class="wp-list-table widefat striped" style="margin-bottom:20px;">
 					<thead><tr><th><?php esc_html_e( 'Range', 'ravanix' ); ?></th><th><?php esc_html_e( 'Label', 'ravanix' ); ?></th><th><?php esc_html_e( 'Color', 'ravanix' ); ?></th><th><?php esc_html_e( 'Actions', 'ravanix' ); ?></th></tr></thead>
 					<tbody>
@@ -117,6 +118,7 @@ foreach ( $test->dimensions as $d ) {
 					<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 			<?php endif; ?>
 		<?php endforeach; ?>
 	</div>

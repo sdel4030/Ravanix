@@ -80,8 +80,35 @@ if ( $edit_id ) {
 				</label>
 			</p>
 			<p id="rs-validity-threshold-wrap" style="<?php echo ( $editing && $editing->is_validity_scale ) ? '' : 'display:none;'; ?>">
-				<label><?php esc_html_e( 'Warning threshold (score at or above which the result is flagged as questionable)', 'ravanix' ); ?></label><br>
-				<input type="number" step="any" name="validity_threshold" value="<?php echo ( $editing && null !== $editing->validity_threshold ) ? esc_attr( $editing->validity_threshold ) : ''; ?>">
+				<label><?php esc_html_e( 'Validity rule(s) (the result is flagged as questionable when these match, evaluated against this dimension\'s raw or T-score per "Interpretation basis" above)', 'ravanix' ); ?></label><br>
+				<div id="rs-validity-rules-wrap">
+					<?php
+					$existing_rules = ( $editing && class_exists( 'Ravanix_Pro_Scoring' ) ) ? Ravanix_Pro_Scoring::get_validity_rules( $editing ) : array();
+					foreach ( $existing_rules as $r ) :
+						?>
+						<p class="rs-validity-rule-row">
+							<select name="validity_rule_operator[]" class="rs-validity-rule-operator">
+								<?php foreach ( Ravanix_Pro_Scoring::VALIDITY_OPERATORS as $op ) : ?>
+									<option value="<?php echo esc_attr( $op ); ?>" <?php selected( $r['operator'], $op ); ?>><?php echo esc_html( Ravanix_Pro_Scoring::validity_operator_label( $op ) ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<input type="text" name="validity_rule_value[]" style="width:90px;" value="<?php echo esc_attr( $r['value'] ); ?>" placeholder="<?php esc_attr_e( 'Value', 'ravanix' ); ?>">
+							<input type="text" name="validity_rule_value2[]" class="rs-validity-rule-value2" style="width:90px;<?php echo 'between' === $r['operator'] ? '' : 'display:none;'; ?>" value="<?php echo esc_attr( $r['value2'] ); ?>" placeholder="<?php esc_attr_e( 'and up to', 'ravanix' ); ?>">
+							<button type="button" class="button rs-remove-validity-rule" aria-label="<?php esc_attr_e( 'Remove rule', 'ravanix' ); ?>">&times;</button>
+						</p>
+					<?php endforeach; ?>
+				</div>
+				<button type="button" id="rs-add-validity-rule" class="button"><?php esc_html_e( '+ Add rule', 'ravanix' ); ?></button>
+				<br><br>
+				<label>
+					<input type="radio" name="validity_logic_type" value="and" <?php checked( ! $editing || 'or' !== $editing->validity_logic_type ); ?>>
+					<?php esc_html_e( 'AND — all rules must match', 'ravanix' ); ?>
+				</label>
+				&nbsp;&nbsp;
+				<label>
+					<input type="radio" name="validity_logic_type" value="or" <?php checked( $editing && 'or' === $editing->validity_logic_type ); ?>>
+					<?php esc_html_e( 'OR — any one rule must match', 'ravanix' ); ?>
+				</label>
 			</p>
 			<?php else : ?>
 			<input type="hidden" name="interpretation_basis" value="raw">
@@ -108,6 +135,7 @@ if ( $edit_id ) {
 				$position_by_qid[ $q->id ] = $i + 1;
 			}
 			?>
+			<div class="rs-table-scroll-x">
 			<table class="wp-list-table widefat striped">
 				<thead><tr>
 					<th><?php esc_html_e( 'Name', 'ravanix' ); ?></th>
@@ -153,6 +181,7 @@ if ( $edit_id ) {
 				<?php endforeach; ?>
 				</tbody>
 			</table>
+			</div>
 		<?php endif; ?>
 	</div>
 </div>
