@@ -85,6 +85,32 @@ function ravanix_uninstall_single_site() {
 	delete_option( 'ravanix_db_version' );
 	delete_option( 'ravanix_sample_data_installed' );
 
+	// Custom capabilities/role added by Ravanix_Roles (see that class in
+	// includes/class-ravanix-roles.php). Reimplemented directly here rather
+	// than requiring that file: uninstall.php runs standalone, outside the
+	// plugin's normal bootstrap, and every other cleanup step in this file
+	// already talks to $wpdb/WordPress core APIs directly for the same
+	// reason -- one less dependency to worry about during uninstall.
+	$ravanix_caps = array(
+		'ravanix_access',
+		'ravanix_manage_tests',
+		'ravanix_view_results',
+		'ravanix_delete_results',
+		'ravanix_export_results',
+		'ravanix_import_export_tests',
+		'ravanix_manage_settings',
+	);
+	foreach ( wp_roles()->role_names as $ravanix_role_slug => $ravanix_role_label ) {
+		$ravanix_role = get_role( $ravanix_role_slug );
+		if ( ! $ravanix_role ) {
+			continue;
+		}
+		foreach ( $ravanix_caps as $ravanix_cap ) {
+			$ravanix_role->remove_cap( $ravanix_cap );
+		}
+	}
+	remove_role( 'ravanix_manager' );
+
 	// Best-effort cleanup of any not-yet-expired rate-limit transients; these
 	// also expire on their own, so this is just tidiness, not a correctness requirement.
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_ravanix\_rate\_%' OR option_name LIKE '\_transient\_timeout\_ravanix\_rate\_%'" );

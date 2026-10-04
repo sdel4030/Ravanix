@@ -3,7 +3,7 @@
  * Plugin Name: Ravanix â€“ Smart Psychological Assessment
  * Plugin URI: https://psykey.ir
  * Description: Free plugin to build and run psychological questionnaires (personality, clinical, screening) with a dynamic scoring engine, automatic result interpretation, and a charted psychological profile. Professional features (norms, composite factors, PDF, import/export, and more) are added by the companion Ravanix Pro plugin.
- * Version: 1.2.1
+ * Version: 2.1.0
  * Author: Ravanix
  * Author URI: https://psykey.ir
  * Text Domain: ravanix
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Direct access is not allowed.
 }
 
-define( 'RAVANIX_VERSION', '1.2.1' );
+define( 'RAVANIX_VERSION', '2.1.0' );
 define( 'RAVANIX_PLUGIN_FILE', __FILE__ );
 define( 'RAVANIX_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RAVANIX_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -28,7 +28,10 @@ define( 'RAVANIX_TABLE_PREFIX', 'ravanix_' ); // In addition to $wpdb->prefix â€
  * Load the plugin's core files.
  */
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-activator.php';
+require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-roles.php';
+Ravanix_Roles::init();
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-db.php';
+require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-branching.php';
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-settings.php';
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-cpt.php';
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-scoring.php';
@@ -41,9 +44,25 @@ require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-ajax.php';
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-sample-data.php';
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-widget.php';
 require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-privacy.php';
+require_once RAVANIX_PLUGIN_DIR . 'includes/class-ravanix-notifications.php';
+Ravanix_Notifications::init();
 
 register_activation_hook( __FILE__, array( 'Ravanix_Activator', 'activate' ) );
 add_action( 'plugins_loaded', array( 'Ravanix_Activator', 'maybe_upgrade' ) );
+
+// Background continuation of activation/upgrade for sites with many existing
+// tests (see Ravanix_Activator::activate()'s threshold check). Registered
+// unconditionally -- not just when Action Scheduler is present -- because the
+// wp-cron fallback in schedule_async_activation_tasks() needs this same hook.
+add_action( 'ravanix_async_activation_tasks', array( 'Ravanix_Activator', 'run_async_activation_tasks' ) );
+
+// Fired by admin save/delete handlers (Ravanix_Admin_Handlers, and Ravanix
+// Pro's own composite/norm handlers) whenever they change a dimension,
+// question, interpretation, norm, or composite belonging to a test -- i.e.
+// anything Ravanix_DB::get_full_test() caches besides the test row itself.
+// Bumping the test's updated_at here is what makes that cache's versioned key
+// roll over automatically; see Ravanix_DB::touch_test() and get_full_test().
+add_action( 'ravanix_test_structure_changed', array( 'Ravanix_DB', 'touch_test' ) );
 
 /**
  * Plugin bootstrap.
