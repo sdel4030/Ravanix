@@ -173,6 +173,79 @@
 		}
 	});
 
+	/* ---------------- Dimensions tab: Validity rule(s) (AND/OR rule rows) ---------------- */
+
+	function buildValidityOperatorSelect() {
+		var $select = $('<select name="validity_rule_operator[]" class="rs-validity-rule-operator"></select>');
+		(ravanixAdminL10n.validityOperators || []).forEach(function (op) {
+			$select.append($('<option></option>').attr('value', op.value).text(op.label));
+		});
+		return $select;
+	}
+
+	function addValidityRuleRow() {
+		var $row = $('<p class="rs-validity-rule-row"></p>');
+		$row.append(buildValidityOperatorSelect());
+		$row.append($('<input type="text" name="validity_rule_value[]" style="width:90px;">').attr('placeholder', ravanixAdminL10n.validityValuePlaceholder));
+		$row.append($('<input type="text" name="validity_rule_value2[]" class="rs-validity-rule-value2" style="width:90px;display:none;">').attr('placeholder', ravanixAdminL10n.validityValue2Placeholder));
+		$row.append($('<button type="button" class="button rs-remove-validity-rule"></button>').attr('aria-label', ravanixAdminL10n.removeRuleLabel).html('&times;'));
+		$('#rs-validity-rules-wrap').append($row);
+	}
+
+	$(document).on('click', '#rs-add-validity-rule', function (e) {
+		e.preventDefault();
+		addValidityRuleRow();
+	});
+
+	$(document).on('click', '.rs-remove-validity-rule', function (e) {
+		e.preventDefault();
+		$(this).closest('.rs-validity-rule-row').remove();
+	});
+
+	// "value2" (the upper bound) only makes sense for the "between" operator;
+	// every other operator hides it rather than submitting an unused value.
+	$(document).on('change', '.rs-validity-rule-operator', function () {
+		$(this).closest('.rs-validity-rule-row').find('.rs-validity-rule-value2').toggle($(this).val() === 'between');
+	});
+
+	/* ---------------- Questions tab: Conditional Logic (AND/OR condition rows) ---------------- */
+
+	function buildConditionOperatorSelect() {
+		var $select = $('<select name="condition_operator[]" class="rs-condition-operator"></select>');
+		(ravanixAdminL10n.conditionOperators || []).forEach(function (op) {
+			$select.append($('<option></option>').attr('value', op.value).text(op.label));
+		});
+		return $select;
+	}
+
+	function buildConditionSourceSelect() {
+		var $select = $('<select name="condition_source_question_id[]"></select>');
+		var questions = $('#rs-conditions-wrap').data('questions') || [];
+		questions.forEach(function (q) {
+			$select.append($('<option></option>').attr('value', q.id).text(q.label));
+		});
+		return $select;
+	}
+
+	function addConditionRow() {
+		var $row = $('<p class="rs-condition-row"></p>');
+		$row.append(buildConditionSourceSelect());
+		$row.append(buildConditionOperatorSelect());
+		$row.append($('<input type="text" name="condition_value[]" style="width:100px;">').attr('placeholder', ravanixAdminL10n.conditionValuePlaceholder));
+		$row.append($('<button type="button" class="button rs-remove-condition"></button>').attr('aria-label', ravanixAdminL10n.removeConditionLabel).html('&times;'));
+		$('#rs-conditions-wrap').append($row);
+	}
+
+	$(document).on('click', '#rs-add-condition', function (e) {
+		e.preventDefault();
+		addConditionRow();
+	});
+
+	$(document).on('click', '.rs-remove-condition', function (e) {
+		e.preventDefault();
+		$(this).closest('.rs-condition-row').remove();
+	});
+
 	/* ---------------- Tests list / results list: select-all + bulk-action validation ---------------- */
 
 	function wireBulkList(selectAllId, formId) {

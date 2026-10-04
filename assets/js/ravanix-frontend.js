@@ -4,31 +4,107 @@
 	/* ---------------- Branching / skip logic ---------------- */
 
 	/**
-	 * Shows/hides each question that has a "show only if" condition
-	 * (data-branch-question / data-branch-value, set by the admin in the
-	 * question's settings), based on the currently selected answer to the
-	 * question it depends on. Always re-evaluates every conditional question
-	 * from scratch (not just the one that just changed), since one answer can
-	 * be the branch source for several other questions at once. Server-side,
-	 * Ravanix_Ajax::submit_test() independently re-derives the exact same
-	 * active/inactive set from the submitted answers -- this client-side pass
-	 * only controls what the participant sees and can be required to answer;
-	 * it is never trusted as the actual security/scoring boundary.
+	 * Evaluates one condition against the currently selected/entered value
+	 * for its source question. Mirrors Ravanix_Branching::evaluate_condition()
+	 * in PHP -- keep the two in sync if either changes. Numeric operators use
+	 * parseFloat the same way PHP's floatval() does: a non-numeric value
+	 * parses to NaN, and every NaN comparison in JS is false, so this fails
+	 * closed exactly like the PHP side.
+	 */
+	function evaluateCondition($form, condition) {
+		var $inputs = $form.find('input[name="answers[' + condition.source_question_id + ']"]');
+		var actual;
+
+		if ($inputs.filter('[type="radio"]').length) {
+			// A set of same-name radios: .val() on the whole set (with nothing
+			// :checked) returns the FIRST radio's static value attribute, not
+			// "nothing is selected" -- jQuery has no concept of "no answer" for
+			// .val() here, it just reads element.value off whichever element it
+			// matched first. Without this branch, an unanswered source question
+			// would incorrectly evaluate as if its first listed option had been
+			// chosen. A single text/number input (the else branch) has no such
+			// ambiguity: .val() already correctly returns '' when empty.
+			var $checked = $inputs.filter(':checked');
+			actual = $checked.length ? $checked.val() : undefined;
+		} else {
+			actual = $inputs.val();
+		}
+
+		if (typeof actual === 'undefined' || actual === null || actual === '') {
+			return false;
+		}
+
+		var expected = condition.value;
+
+		switch (condition.operator) {
+			case 'not_equals':
+				return String(actual) !== String(expected);
+			case 'gt':
+				return parseFloat(actual) > parseFloat(expected);
+			case 'lt':
+				return parseFloat(actual) < parseFloat(expected);
+			case 'gte':
+				return parseFloat(actual) >= parseFloat(expected);
+			case 'lte':
+				return parseFloat(actual) <= parseFloat(expected);
+			case 'equals':
+			default:
+				return String(actual) === String(expected);
+		}
+	}
+
+	/**
+	 * Shows/hides each question that has one or more "show only if"
+	 * conditions (data-branch-conditions / data-branch-logic, set by the
+	 * admin in the question's settings), based on the currently selected
+	 * answers. Always re-evaluates every conditional question from scratch
+	 * (not just the one that just changed), since one answer can be the
+	 * branch source for several other questions at once. Server-side,
+	 * Ravanix_Branching::is_active() (used by Ravanix_Ajax::submit_test())
+	 * independently re-derives the exact same active/inactive set from the
+	 * submitted answers -- this client-side pass only controls what the
+	 * participant sees and can be required to answer; it is never trusted as
+	 * the actual security/scoring boundary.
 	 */
 	function applyBranching($container) {
 		var $form = $container.find('.rs-test-form');
 		var changed = false;
 
-		$form.find('.rs-question[data-branch-question]').each(function () {
-			var $q = $(this);
-			var depId = $q.data('branch-question');
-			var expected = String($q.data('branch-value'));
-			var actual = $form.find('input[name="answers[' + depId + ']"]:checked').val();
-			var isActive = (typeof actual !== 'undefined') && (String(actual) === expected);
-			var wasHidden = $q.hasClass('rs-question-hidden');
+		$form.find('.rs-question[data-branch-conditions]').each(function () {
+			try {
+				var $q = $(this);
+				var conditions = $q.data('branch-conditions');
+				var logic = $q.data('branch-logic');
+				var isActive;
 
-			if (isActive === wasHidden) { changed = true; }
-			$q.toggleClass('rs-question-hidden', !isActive);
+				// jQuery's .data() only auto-parses a data-* attribute as JSON
+				// when the value it read looks like one; if that parse ever
+				// fails for any reason, it silently falls back to the raw
+				// string instead of an array. Guarding for that here (rather
+				// than trusting conditions to already be an array) means a
+				// single malformed/unexpected attribute value can only ever
+				// make that one question behave as "always shown" -- it can
+				// never throw and abort every handler queued after this one,
+				// including the actual form submission itself.
+				if (!Array.isArray(conditions) || !conditions.length) {
+					isActive = true;
+				} else if (logic === 'or') {
+					isActive = conditions.some(function (c) { return evaluateCondition($form, c); });
+				} else {
+					isActive = conditions.every(function (c) { return evaluateCondition($form, c); });
+				}
+
+				var wasHidden = $q.hasClass('rs-question-hidden');
+				if (isActive === wasHidden) { changed = true; }
+				$q.toggleClass('rs-question-hidden', !isActive);
+			} catch (err) {
+				// See the comment above: fail open (question stays visible/as
+				// it was) rather than letting one bad row break the rest of
+				// the page's scripting.
+				if (window.console && window.console.error) {
+					window.console.error('Ravanix: skipping a malformed branching condition', err);
+				}
+			}
 		});
 
 		if (changed) {

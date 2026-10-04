@@ -16,7 +16,7 @@
 
 	blocks.registerBlockType( 'ravanix/questionnaire', {
 		title: __( 'Ravanix – Questionnaire', 'ravanix' ),
-		description: __( 'Display a specific questionnaire, or a list of all published questionnaires as a list or a grid.', 'ravanix' ),
+		description: __( 'Display a specific questionnaire, or a list of all published questionnaires as a grid, a list, or titles only.', 'ravanix' ),
 		icon: 'forms',
 		category: 'widgets',
 		attributes: {
@@ -26,6 +26,8 @@
 			columns: { type: 'number', default: 3 },
 			showImage: { type: 'boolean', default: true },
 			showExcerpt: { type: 'boolean', default: true },
+			limit: { type: 'number', default: 0 },
+			order: { type: 'string', default: 'newest' },
 			hideHeader: { type: 'boolean', default: false }
 		},
 
@@ -83,10 +85,36 @@
 							value: attributes.layout,
 							options: [
 								{ label: __( 'Grid', 'ravanix' ), value: 'grid' },
-								{ label: __( 'List', 'ravanix' ), value: 'list' }
+								{ label: __( 'List', 'ravanix' ), value: 'list' },
+								{ label: __( 'Titles only', 'ravanix' ), value: 'titles' }
 							],
 							onChange: function ( value ) {
 								setAttributes( { layout: value } );
+							}
+						} ),
+
+					attributes.mode === 'list' &&
+						el( SelectControl, {
+							label: __( 'Order', 'ravanix' ),
+							value: attributes.order,
+							options: [
+								{ label: __( 'Newest first', 'ravanix' ), value: 'newest' },
+								{ label: __( 'Random', 'ravanix' ), value: 'random' }
+							],
+							onChange: function ( value ) {
+								setAttributes( { order: value } );
+							}
+						} ),
+
+					attributes.mode === 'list' &&
+						el( RangeControl, {
+							label: __( 'Maximum number to show', 'ravanix' ),
+							help: __( '0 shows every published questionnaire.', 'ravanix' ),
+							value: attributes.limit,
+							min: 0,
+							max: 24,
+							onChange: function ( value ) {
+								setAttributes( { limit: value } );
 							}
 						} ),
 
@@ -103,6 +131,7 @@
 						} ),
 
 					attributes.mode === 'list' &&
+						attributes.layout !== 'titles' &&
 						el( ToggleControl, {
 							label: __( 'Show featured image', 'ravanix' ),
 							checked: attributes.showImage,
@@ -112,6 +141,7 @@
 						} ),
 
 					attributes.mode === 'list' &&
+						attributes.layout !== 'titles' &&
 						el( ToggleControl, {
 							label: __( 'Show description excerpt', 'ravanix' ),
 							checked: attributes.showExcerpt,
